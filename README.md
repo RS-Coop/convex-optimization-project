@@ -12,7 +12,7 @@ Background: I did some research last summer using a 2nd order Newton's method ca
 
 2. sparse PCA via Riemannian optimization https://epubs.siam.org/doi/pdf/10.1137/080731359?casa_token=LC-4M4WJmgAAAAAA:xk-8RmscEv8PlnZcelQcm3iHsLtg63VSigm5puKzv7TUwMEU-LbkY1AVDd6joRBP22lKoP4xsw
 
-Background: I implemented a Riemmanian version of ARC last summer without much understanding due to lack of prereqs in differential geometry. It is very fascinating to me and I thought perhaps starting from an easier problem/manifold would yield a gentler learning curve. Also semidefinite matrix cone is pretty relevant to this class and sparse PCA is super useful in application.
+Background: I implemented a Riemmanian version of ARC last summer without much understanding due to lack of prereqs in differential geometry. It is very fascinating to me and I thought perhaps starting from an easier problem/manifold would yield a gentler learning curve. This paper seems to fit that criteria. Also semidefinite matrix cone is pretty relevant to this class and sparse PCA is super useful in application.
 
 3. Optimization on real-valued function with complex input using Wirtinger Calculus https://epubs.siam.org/doi/pdf/10.1137/110832124?casa_token=JZcLu_vMxCAAAAAA:C2ioOdP[…]WRJlf8pSy-W1BIWy_5U8v8l9b6Od4StnYr0zI_PK7JF3LgXCsMmuHtbAzOr6w
 https://www.nature.com/articles/s41598-019-52289-0
