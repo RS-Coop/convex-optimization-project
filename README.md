@@ -16,4 +16,5 @@ Background: I implemented a Riemmanian version of ARC last summer without much u
 
 3. Optimization on real-valued function with complex input using Wirtinger Calculus https://epubs.siam.org/doi/pdf/10.1137/110832124?casa_token=JZcLu_vMxCAAAAAA:C2ioOdP[…]WRJlf8pSy-W1BIWy_5U8v8l9b6Od4StnYr0zI_PK7JF3LgXCsMmuHtbAzOr6w
 https://www.nature.com/articles/s41598-019-52289-0
+
 Background: I'm currently trying to optimize such function for research, and the fact that the function involves complex steps is causing lots of trouble using traditional method. It seems like Wirtinger gradient is the proper method for this kind of functions, which appear all the time in certain applications (e.g. least squares objective function of signals involving integral transforms, quantum tomography, etc).
