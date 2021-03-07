@@ -1,20 +1,34 @@
-# Insert Cool Name Here
-Course project for APPM 5630 - Advanced Convex Optimization
+# Approximate Hessian Based ARC for Non-Convex Optimization
+Course project for APPM 5630 - Advanced Convex Optimization, Spring 2021.
 
-## Team Members
-Cooper Simpson 
-Jaden Wang
+We mainly follow the ideas presented in the following papers:
+- [Newton-Type Methods for Non-Convex Optimization Under Inexact Hessian Information](https://arxiv.org/abs/1708.07164)
+- [Second-Order Optimization for Non-Convex Machine Learning: An Empirical Study](https://arxiv.org/abs/1708.07827)
 
-Project ideas:
-1. 2nd order Newton methods under inexact Hessian https://link.springer.com/article/10.1007/s10107-019-01405-z
+## Abstract
+We...
 
-Background: I did some research last summer using a 2nd order Newton's method called adaptive regularization for cubics (ARC) with exact Hessian and found it to be a super powerful algorithm for non-convex problems, because it uses 2nd order information to avoid saddle points and converges superlinearly near the optimal solution. This paper allows us to cheaply approximate the Hessian instead (because true Hessian is a pain in the butt to find) and claims the computational cost to be comparable to SGD. If the claim is true this would be quite remarkable and we can use it to solve many hard problems where SGD fails. It would be interesting to implement this algorithm and either replicate their results or apply it to our own problems or compare it to ARC with true Hessian.
+## Project Members
+- Cooper Simpson
+- Jaden Wang
 
-2. sparse PCA via Riemannian optimization https://epubs.siam.org/doi/pdf/10.1137/080731359?casa_token=LC-4M4WJmgAAAAAA:xk-8RmscEv8PlnZcelQcm3iHsLtg63VSigm5puKzv7TUwMEU-LbkY1AVDd6joRBP22lKoP4xsw
+## Approximate Timeline and Roadmap
+We have until April 23 to get everything done.
 
-Background: I implemented a Riemmanian version of ARC last summer without much understanding due to lack of prereqs in differential geometry. It is very fascinating to me and I thought perhaps starting from an easier problem/manifold would yield a gentler learning curve. This paper seems to fit that criteria. Also semidefinite matrix cone is pretty relevant to this class and sparse PCA is super useful in application.
+1. Port the optimization code from Matlab to Python and try to connect each piece with the related theory. This includes implementing ARC, solving the CR sub-problem, and approximating the Hessian.
+2. Understand what needs to be done to integrate our code with PyTorch.
+3. Further understand and explicitly describe the conditions and requirements on the objective function for this method.
+4. If possible expand upon the types of problems that can be exploited in this method (e.g. finite sum minimization).
+5. Other ways to approximate the Hessian?
+6. Do experiments
 
-3. Optimization on real-valued function with complex input using Wirtinger Calculus https://epubs.siam.org/doi/pdf/10.1137/110832124?casa_token=JZcLu_vMxCAAAAAA:C2ioOdP[…]WRJlf8pSy-W1BIWy_5U8v8l9b6Od4StnYr0zI_PK7JF3LgXCsMmuHtbAzOr6w
-https://www.nature.com/articles/s41598-019-52289-0
+# Deliverables
+- 4-6 page paper including figures. Specifically, a 1 page background, one-page method, 2-3 pages of results, and a 1/2 page conclusion.
+- 10 minute presentation.
 
-Background: I'm currently trying to optimize such function for research, and the fact that the function involves complex steps is causing lots of trouble using traditional method. It seems like Wirtinger gradient is the proper method for this kind of functions, which appear all the time in certain applications (e.g. least squares objective function of signals involving integral transforms, quantum tomography, etc).
+# Repository Structure
+- *aarc* (Approximate Adaptive Regularization with Cubics): This folder is Coopers port of the optimization code.
+- *dl_experiment*: Code for applying our method to a number of deep learning models.
+
+## Other Resources
+- [Second-Order Optimization Git Repo](https://github.com/git-xp/Non-Convex-Newton)
