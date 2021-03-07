@@ -22,13 +22,17 @@ We have until April 23 to get everything done.
 5. Other ways to approximate the Hessian?
 6. Do experiments
 
-# Deliverables
+## Deliverables
 - 4-6 page paper including figures. Specifically, a 1 page background, one-page method, 2-3 pages of results, and a 1/2 page conclusion.
 - 10 minute presentation.
 
-# Repository Structure
+## Repository Structure
 - *aarc* (Approximate Adaptive Regularization with Cubics): This folder is Coopers port of the optimization code.
 - *dl_experiment*: Code for applying our method to a number of deep learning models.
+
+## Requirements
+- numpy
+- pytorch
 
 ## Other Resources
 - [Second-Order Optimization Git Repo](https://github.com/git-xp/Non-Convex-Newton)
