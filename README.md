@@ -4,6 +4,12 @@ Course project for APPM 5630 - Advanced Convex Optimization, Spring 2021.
 We mainly follow the ideas presented in the following papers:
 - [Newton-Type Methods for Non-Convex Optimization Under Inexact Hessian Information](https://arxiv.org/abs/1708.07164)
 - [Second-Order Optimization for Non-Convex Machine Learning: An Empirical Study](https://arxiv.org/abs/1708.07827)
+- [Inexact Non-Convex Newton-Type Methods](https://arxiv.org/abs/1802.06925)
+
+These are some other potentially useful papers related to the topic.
+- [Newton Sketch and Sub-Sampled Newton Methods](https://arxiv.org/abs/1705.06211)
+- [PyHessian -- for Neural Networks](https://arxiv.org/abs/1912.07145)
+- [Adaptive Cubic Regularization Methods with Inexact Hessian](https://arxiv.org/abs/1808.06239)
 
 ## Abstract
 We...
@@ -36,3 +42,5 @@ We have until April 23 to get everything done.
 
 ## Other Resources
 - [Second-Order Optimization Git Repo](https://github.com/git-xp/Non-Convex-Newton)
+- [Inexact Newton-Type Methods Git Rrepo](https://github.com/yaozhewei/Inexact_Newton_Method)
+- [Jadens Original ARC Implementation](https://github.com/tholdem/MatrixMultiplication/blob/master/CubicRegularization/cubicReg.m)
