@@ -41,6 +41,7 @@ We have until April 23 to get everything done.
 - pytorch
 
 ## Other Resources
+- [Numerical Optimization by Nocedal and Wright](https://link.springer.com/book/10.1007%2F978-0-387-40065-5)
 - [Second-Order Optimization Git Repo](https://github.com/git-xp/Non-Convex-Newton)
 - [Inexact Newton-Type Methods Git Rrepo](https://github.com/yaozhewei/Inexact_Newton_Method)
 - [Jadens Original ARC Implementation](https://github.com/tholdem/MatrixMultiplication/blob/master/CubicRegularization/cubicReg.m)
