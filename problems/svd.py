@@ -23,13 +23,13 @@ def _boxProduct(A,B):
           p[i*m2+j,k*n1+l] = A[i,l]*B[j,k]
   return p
 
-def svd(method, max_dim=10):
+def svd(method, args=(), max_dim=10):
     #create a random matrix
     m = np.maximum(np.random.randint(max_dim),2)
     n = np.maximum(np.random.randint(max_dim),2)
 
     r = np.minimum(m,n) #Get the rank
-    self.A = np.random.randn(m,r)@np.random.randn(r,n)
+    A = np.random.randn(m,r)@np.random.randn(r,n)
 
     #vectorize matrix
     vec = lambda X: np.reshape(X,(-1,1))
@@ -53,9 +53,11 @@ def svd(method, max_dim=10):
     #matvec function where H(x0) is applied to x, i.e. hess(x,x0) = H(x0)*x
     Hp = lambda x0,x:  np.squeeze(np.vstack((vec(U(x)@V(x0).T@V(x0))+vec(U(x0)@V(x).T@V(x0)+g(x0)@V(x)),vec((U(x)@V(x0).T).T@U(x0)+g(x0).T@U(x))+vec((U(x0)@V(x).T).T@U(x0)))))
 
-    #random initial point
-    x0 = np.random.randn(r*(m+n),1)
+    print(f'Looking for SVD decomposition on matrix of size {A.shape}')
 
-    sol = method(f, grad, H, x0)
+    #random initial point
+    x0 = np.random.randn(r*(m+n))
+
+    sol = method(f, grad, H, x0, *args)
 
     return f(sol)
