@@ -1,3 +1,0 @@
-'''
-Approximate Trust-Region
-'''

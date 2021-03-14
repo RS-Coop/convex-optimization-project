@@ -11,6 +11,9 @@ These are some other potentially useful papers related to the topic.
 - [PyHessian -- for Neural Networks](https://arxiv.org/abs/1912.07145)
 - [Adaptive Cubic Regularization Methods with Inexact Hessian](https://arxiv.org/abs/1808.06239)
 
+I think this is the paper that proposes the adaptive variant.
+- [Adaptive Cubic Regularization Algorithm](https://people.maths.ox.ac.uk/cartis/papers/cgt32.pdf)
+
 ## Abstract
 We...
 
@@ -21,27 +24,43 @@ We...
 ## Approximate Timeline and Roadmap
 We have until April 23 to get everything done.
 
-1. Port the optimization code from Matlab to Python and try to connect each piece with the related theory. This includes implementing ARC, solving the CR sub-problem, and approximating the Hessian.
-2. Understand what needs to be done to integrate our code with PyTorch.
-3. Further understand and explicitly describe the conditions and requirements on the objective function for this method.
-4. If possible expand upon the types of problems that can be exploited in this method (e.g. finite sum minimization).
-5. Other ways to approximate the Hessian?
-6. Do experiments
+1. 03/06 - 03/13:
+  - Implement TR (Jaden)
+  - Implement ARC (Cooper)
+2. 03/13 - 03/20:
+  - Finish testing ARC (Cooper)
+  - Add pre-existing ARC implementation (Jaden)
+  - Write hessian sub-sampling code (Both)
+  - Start on logistic regression spambase problem (Jaden)
+  - Start on shallow NN spambase problem (Cooper)
+
+### Other plans
+- Further understand and explicitly describe the conditions and requirements on the objective function for this method.
+- If possible expand upon the types of problems that can be exploited in this method (e.g. finite sum minimization).
+- Other ways to approximate the Hessian?
 
 ## Deliverables
 - 4-6 page paper including figures. Specifically, a 1 page background, one-page method, 2-3 pages of results, and a 1/2 page conclusion.
 - 10 minute presentation.
 
 ## Repository Structure
-- *aarc* (Approximate Adaptive Regularization with Cubics): This folder is Coopers port of the optimization code.
-- *dl_experiment*: Code for applying our method to a number of deep learning models.
+- *core*: Contains all optimization algorithm details
+  - *hessian.py*: Methods for sub-sampling hessian
+  - *pytorch.py*: Interaction with pytorch for use in neural networks
+  - *arc*: Adaptive Regularization with Cubics algorithm implementation
+- *problems*: Various target problems for applying our methods
+  - *svd.py*: Compute SVD factorization using non-convex optimization
+  - *spambase*: Spambase classification task
 
 ## Requirements
 - numpy
 - pytorch
+- scipy
 
 ## Other Resources
 - [Numerical Optimization by Nocedal and Wright](https://link.springer.com/book/10.1007%2F978-0-387-40065-5)
 - [Second-Order Optimization Git Repo](https://github.com/git-xp/Non-Convex-Newton)
 - [Inexact Newton-Type Methods Git Rrepo](https://github.com/yaozhewei/Inexact_Newton_Method)
 - [Jadens Original ARC Implementation](https://github.com/tholdem/MatrixMultiplication/blob/master/CubicRegularization/cubicReg.m)
+- [Somebodys Git Repo for ARC](https://github.com/cjones6/cubic_reg)
+- [PyTorch Optimizer Documentation](https://pytorch.org/docs/stable/optim.html)
