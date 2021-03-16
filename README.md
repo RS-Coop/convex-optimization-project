@@ -13,7 +13,7 @@ These are some other potentially useful papers related to the topic.
 
 I think this is the paper that proposes the adaptive variant.
 - [Adaptive Cubic Regularization Algorithm](https://people.maths.ox.ac.uk/cartis/papers/cgt32.pdf)
-- Here are the published version of the original ARC paper https://link.springer.com/content/pdf/10.1007/s10107-009-0286-5.pdf https://link.springer.com/content/pdf/10.1007/s10107-009-0337-y.pdf
+- Here are the published version of the original ARC paper [Adaptive Cubic Regularization Algorithm Part 1](https://link.springer.com/content/pdf/10.1007/s10107-009-0286-5.pdf) [Part 2](https://link.springer.com/content/pdf/10.1007/s10107-009-0337-y.pdf)
 
 ## Abstract
 We...
