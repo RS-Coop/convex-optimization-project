@@ -29,7 +29,7 @@ We have until April 23 to get everything done.
   - Implement ARC (Cooper)
 2. 03/13 - 03/20:
   - Finish testing ARC (Cooper)
-  - Add pre-existing ARC implementation (Jaden)
+  - Add pre-existing ARC implementation (Jaden): https://github.com/dalab/subsampled_cubic_regularization/blob/master/scr.py existing implementation of full Hessian exists, porting my implementation to python might not be worth the time right now, I will focus on understanding sub-smapling first.
   - Write hessian sub-sampling code (Both)
   - Start on logistic regression spambase problem (Jaden)
   - Start on shallow NN spambase problem (Cooper)
