@@ -38,7 +38,7 @@ We have until April 23 to get everything done.
 ### Other plans
 - Further understand and explicitly describe the conditions and requirements on the objective function for this method.
 - If possible expand upon the types of problems that can be exploited in this method (e.g. finite sum minimization).
-- Other ways to approximate the Hessian?
+- Other ways to approximate the Hessian, including non-uniform sampling presented by Xu 2020, dynamic Hessian accuracy by Bellavia 2019.
 
 ## Deliverables
 - 4-6 page paper including figures. Specifically, a 1 page background, one-page method, 2-3 pages of results, and a 1/2 page conclusion.
