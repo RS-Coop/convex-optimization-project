@@ -7,9 +7,9 @@ We mainly follow the ideas presented in the following papers:
 - [Inexact Non-Convex Newton-Type Methods](https://arxiv.org/abs/1802.06925)
 
 These are some other potentially useful papers related to the topic.
-- [Newton Sketch and Sub-Sampled Newton Methods](https://arxiv.org/abs/1705.06211)
+- [Newton Sketch and Sub-Sampled Newton Methods](https://arxiv.org/abs/1705.06211) (gist: subsampling is better)
 - [PyHessian -- for Neural Networks](https://arxiv.org/abs/1912.07145)
-- [Adaptive Cubic Regularization Methods with Inexact Hessian](https://arxiv.org/abs/1808.06239) (This is the adaptive adaptive regularization for cubics, worth reading since it contains a lot of implementation details)
+- [Adaptive Cubic Regularization Methods with Inexact Hessian](https://arxiv.org/abs/1808.06239) (This is the "adaptive" adaptive regularization for cubics, worth reading since it contains a lot of implementation details, although no code since it was written in Fortran...)
 
 I think this is the paper that proposes the adaptive variant.
 - [Adaptive Cubic Regularization Algorithm](https://people.maths.ox.ac.uk/cartis/papers/cgt32.pdf)
