@@ -10,10 +10,11 @@ These are some other potentially useful papers related to the topic.
 - [Newton Sketch and Sub-Sampled Newton Methods](https://arxiv.org/abs/1705.06211) (gist: subsampling is better)
 - [PyHessian -- for Neural Networks](https://arxiv.org/abs/1912.07145)
 - [Adaptive Cubic Regularization Methods with Inexact Hessian](https://arxiv.org/abs/1808.06239) (This is the "dynamic" ARC, worth reading since it contains a lot of implementation details, although no code since it was written in Fortran...)
+- [Sub-sampled Cubic Regularization for Non-convex Optimization](https://arxiv.org/abs/1705.05933): This is the paper for SCR
 
-I think this is the paper that proposes the adaptive variant.
-- [Adaptive Cubic Regularization Algorithm](https://people.maths.ox.ac.uk/cartis/papers/cgt32.pdf)
-- Here are the published version of the original ARC paper [Adaptive Cubic Regularization Algorithm Part 1,](https://link.springer.com/content/pdf/10.1007/s10107-009-0286-5.pdf) [Part 2](https://link.springer.com/content/pdf/10.1007/s10107-009-0337-y.pdf)
+These are some of the original papers dealing with ARC.
+- [Adaptive Cubic Regularization Algorithm Part 1,](https://link.springer.com/content/pdf/10.1007/s10107-009-0286-5.pdf) [Part 2](https://link.springer.com/content/pdf/10.1007/s10107-009-0337-y.pdf): Original ARC paper
+- [Adaptive Cubic Regularization Algorithm](https://people.maths.ox.ac.uk/cartis/papers/cgt32.pdf): Original proposal of the adaptive version of ARC
 
 ## Abstract
 We...
@@ -30,7 +31,7 @@ We have until April 23 to get everything done.
   - Implement ARC (Cooper)
 2. 03/13 - 03/20:
   - Finish testing ARC (Cooper)
-  - Add pre-existing ARC implementation (Jaden): https://github.com/dalab/subsampled_cubic_regularization/blob/master/scr.py implementation of full Hessian (cholesky) ARC exists, porting my implementation to python might not be worth the time right now since we just want to use it to check but not in experiment (too slow), I will focus on understanding sub-sampling first.
+  - Add pre-existing ARC implementation (Jaden): SCR implementation of full Hessian (cholesky) ARC exists, porting my implementation to python might not be worth the time right now since we just want to use it to check but not in experiment (too slow), I will focus on understanding sub-sampling first.
   - Write hessian sub-sampling code (Both)
   - Start on logistic regression spambase problem (Jaden)
   - Start on shallow NN spambase problem (Cooper)
@@ -65,3 +66,4 @@ We have until April 23 to get everything done.
 - [Jadens Original ARC Implementation](https://github.com/tholdem/MatrixMultiplication/blob/master/CubicRegularization/cubicReg.m)
 - [Somebodys Git Repo for ARC](https://github.com/cjones6/cubic_reg)
 - [PyTorch Optimizer Documentation](https://pytorch.org/docs/stable/optim.html)
+- [SCR Git Repo](https://github.com/dalab/subsampled_cubic_regularization)

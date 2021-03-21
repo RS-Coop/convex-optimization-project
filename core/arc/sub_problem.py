@@ -28,8 +28,7 @@ Dispatcher for solution methods
 '''
 def arcSub(method, args, kw={}):
     solver_map = {
-        'lanczos' : lanczos,
-        'gradient descent' : gradientDescent
+        'lanczos' : lanczos
     }
 
     return solver_map[method](*args, **kw)
@@ -56,8 +55,7 @@ def lanczos(g, H, sigma, maxitr=500, tol=1e-6):
     K = min(d, maxitr)
     Q = np.zeros((d, K))
 
-    rng = default_rng()
-    q = g + rng.standard_normal(d)/np.sqrt(d)
+    q = g
     q = q/la.norm(q)
 
     T = np.zeros((K+1, K+1))
@@ -70,10 +68,6 @@ def lanczos(g, H, sigma, maxitr=500, tol=1e-6):
         T[i,i] = q.T@v
 
         #Orthogonalize
-        # M = Q[:,:i]
-        # r = v
-        # for j in range(i):
-        #     r = r - (v.T@M[:,j])*M[:,j]
         r = v - Q[:,:i]@(Q[:,:i].T@v)
 
         b = la.norm(r)
@@ -81,9 +75,13 @@ def lanczos(g, H, sigma, maxitr=500, tol=1e-6):
         T[i+1,i] = b
 
         if b < tol:
+            q=0
             break
 
         q = r/b
+
+    #Compute last diagonal element
+    T[i, i] = q.T@H@q
 
     T = T[:i, :i]
     Q = Q[:, :i]
@@ -94,43 +92,10 @@ def lanczos(g, H, sigma, maxitr=500, tol=1e-6):
     gt = Q.T@g
 
     #Optimization inception
-    z0 = rng.standard_normal(i)
+    z0 = np.zeros((i,1))
     out = minimize(objective, z0, jac=objective_grad,
                     args=(gt, T, sigma), method='BFGS', tol=tol)
     z = out['x']
     m = out['fun']
-    print(out['success'])
 
     return Q@z, m
-
-'''
-Gradient Descent
-
-Key Word Input:
-    lipg -> Lipschitz constant of gradient (g)
-'''
-def gradientDescent(g, H, sigma, maxitr, tol, *, lipg):
-    step = 1/(20*lipg)
-
-    g_norm = la.norm(g)
-
-    if g_norm >= (lipg**2)/sigma:
-        tmp = np.dot(g, H@g) / ((g_norm**2)*sigma)
-        RC = -tmp + sqrt(tmp**2 + 4*g_norm/sigma)
-        x = -RC*(g/g_norm)*2
-        m = objective(x, g, H, sigma)
-
-    else:
-        x = np.zeros(g.shape)
-
-        for i in range(maxitr):
-            x1 = x - step*objective_grad(x, g, H, sigma)
-
-            if la.norm(x1-x) < tol:
-                break
-
-            x = x1
-
-        m = objective(x, g, H, sigma)
-
-    return x, m

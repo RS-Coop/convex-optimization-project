@@ -12,6 +12,7 @@ Algorithms for solving the sub-problem are given in sub_problem.py
 '''
 
 from warnings import warn
+import numpy as np
 import numpy.linalg as la
 
 from .sub_problem import arcSub
@@ -26,6 +27,7 @@ Input:
     x0 -> Starting point
     eps_g -> Gradient tolerance
     eps_h -> Hessian tolerance
+    args -> Additional arguments for function, gradient, and hessian (optional)
     sigma -> Initial regularization parameter (0,inf) (optional)
     eta -> Step success (0,1] (optional)
     gamma -> Regularization update (1,inf) (optional)
@@ -40,17 +42,17 @@ NOTE: Can add multiple eta and gamma parameters for adaptiveness
 NOTE: Look into stopping condtions, code seems to be different than paper
 algorithm in sources.
 '''
-def arc(F, gradF, hessF, x0, eps_g, eps_h, sigma=1, eta=0.1, gamma=2,
-        maxitr=1000, sub_method='lanczos', sub_tol=1e-6, sub_maxitr=500):
+def arc(F, gradF, hessF, x0, eps_g, eps_h, args=(), sigma=1, eta_1=0.1, eta_2=0.9,
+        gamma_1=2, gamma_2=2, maxitr=1000, sub_method='lanczos'):
 
     fails = 0 #Keep track of failed updates
 
     xt = x0
 
     #Set current objective value, gradient, and hessian
-    ft = F(xt)
-    gt = gradF(xt)
-    Ht = hessF(xt)
+    ft = F(xt, *args)
+    gt = gradF(xt, *args)
+    Ht = hessF(xt, *args)
 
     #Check termination conditions
     #Bounds on norm of Gradient and smallest eigenvalue of hessian
@@ -68,15 +70,13 @@ def arc(F, gradF, hessF, x0, eps_g, eps_h, sigma=1, eta=0.1, gamma=2,
         p = (ft - F(xt+s))/(-m)
 
         #If step was good update
-        print(p)
-        if p>=eta:
+        if p>=eta_1:
             xt = xt + s
-            sigma = sigma/gamma
 
             #Update gradient and hessian accordingly
-            ft = F(xt)
-            gt = gradF(xt)
-            Ht = hessF(xt)
+            ft = F(xt, *args)
+            gt = gradF(xt, *args)
+            Ht = hessF(xt, *args)
 
             #Check termination conditions
             #Bounds on norm of Gradient and smallest eigenvalue of hessian
@@ -85,12 +85,16 @@ def arc(F, gradF, hessF, x0, eps_g, eps_h, sigma=1, eta=0.1, gamma=2,
                 if la.eigvals(Ht).min()>=-eps_h:
                     return xt
 
-        #If step wasn't good decrease regularization (sigma)
-        else:
-            sigma = sigma*gamma
+        #Okay update
+        if p>=eta_2:
+            sigma = max(sigma/gamma_2, 1e-16)
+
+        #Bad update
+        elif p<eta_1:
+            sigma = gamma_1*sigma
 
             fails += 1
-            if fails == 10:
+            if fails == 50:
                 print('Failure, exiting.')
                 return xt
 

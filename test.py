@@ -5,7 +5,7 @@ from problems.svd import svd
 def main():
     print('Testing...')
 
-    minimum = svd(arc, (1e-3, 1e-3))
+    minimum = svd(arc, {'eps_g':1e-3, 'eps_h':1e-3})
 
     print(f'Minimum objective value: {minimum}')
 

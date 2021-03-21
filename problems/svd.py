@@ -23,7 +23,7 @@ def _boxProduct(A,B):
           p[i*m2+j,k*n1+l] = A[i,l]*B[j,k]
   return p
 
-def svd(method, args=(), max_dim=10):
+def svd(method, kwargs={}, max_dim=10):
     #create a random matrix
     m = np.maximum(np.random.randint(max_dim),2)
     n = np.maximum(np.random.randint(max_dim),2)
@@ -58,6 +58,6 @@ def svd(method, args=(), max_dim=10):
     #random initial point
     x0 = np.random.randn(r*(m+n))
 
-    sol = method(f, grad, H, x0, *args)
+    sol = method(f, grad, H, x0, **kwargs)
 
     return f(sol)
