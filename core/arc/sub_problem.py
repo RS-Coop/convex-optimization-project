@@ -57,7 +57,7 @@ def lanczos(g, H, sigma, maxitr=500, tol=1e-6):
     Q = np.zeros((d, K))
 
     rng = default_rng()
-    q = g + rng.standard_normal(g.shape)
+    q = g + rng.standard_normal(d)/np.sqrt(d)
     q = q/la.norm(q)
 
     T = np.zeros((K+1, K+1))
@@ -70,10 +70,11 @@ def lanczos(g, H, sigma, maxitr=500, tol=1e-6):
         T[i,i] = q.T@v
 
         #Orthogonalize
-        M = Q[:,:i]
-        r = v
-        for j in range(i):
-            r = r - (v.T@M[:,j])*M[:,j]
+        # M = Q[:,:i]
+        # r = v
+        # for j in range(i):
+        #     r = r - (v.T@M[:,j])*M[:,j]
+        r = v - Q[:,:i]@(Q[:,:i].T@v)
 
         b = la.norm(r)
         T[i,i+1] = b
@@ -93,11 +94,12 @@ def lanczos(g, H, sigma, maxitr=500, tol=1e-6):
     gt = Q.T@g
 
     #Optimization inception
-    z0 = np.zeros(i)
+    z0 = rng.standard_normal(i)
     out = minimize(objective, z0, jac=objective_grad,
                     args=(gt, T, sigma), method='BFGS', tol=tol)
     z = out['x']
     m = out['fun']
+    print(out['success'])
 
     return Q@z, m
 

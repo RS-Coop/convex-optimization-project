@@ -40,7 +40,7 @@ NOTE: Can add multiple eta and gamma parameters for adaptiveness
 NOTE: Look into stopping condtions, code seems to be different than paper
 algorithm in sources.
 '''
-def arc(F, gradF, hessF, x0, eps_g, eps_h, sigma=1, eta=0.8, gamma=2,
+def arc(F, gradF, hessF, x0, eps_g, eps_h, sigma=1, eta=0.1, gamma=2,
         maxitr=1000, sub_method='lanczos', sub_tol=1e-6, sub_maxitr=500):
 
     fails = 0 #Keep track of failed updates
@@ -68,6 +68,7 @@ def arc(F, gradF, hessF, x0, eps_g, eps_h, sigma=1, eta=0.8, gamma=2,
         p = (ft - F(xt+s))/(-m)
 
         #If step was good update
+        print(p)
         if p>=eta:
             xt = xt + s
             sigma = sigma/gamma
@@ -89,7 +90,7 @@ def arc(F, gradF, hessF, x0, eps_g, eps_h, sigma=1, eta=0.8, gamma=2,
             sigma = sigma*gamma
 
             fails += 1
-            if fails == 3:
+            if fails == 10:
                 print('Failure, exiting.')
                 return xt
 
