@@ -34,7 +34,11 @@ We have until April 23 to get everything done.
   - Add pre-existing ARC implementation (Jaden): SCR implementation of full Hessian (cholesky) ARC exists, porting my implementation to python might not be worth the time right now since we just want to use it to check but not in experiment (too slow), I will focus on understanding sub-sampling first.
   - Write hessian sub-sampling code (Both)
   - Start on logistic regression spambase problem (Jaden)
-  - Start on shallow NN spambase problem (Cooper)
+
+3. 03/21 - 03/28
+  - get shallow NN spambase problem working via pytorch (both)
+  - write outline for reference papers (Jaden)
+  - write the theoretic background section of the paper if time permitted (both)
 
 ### Other plans
 - Further understand and explicitly describe the conditions and requirements on the objective function for this method.
