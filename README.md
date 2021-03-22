@@ -16,6 +16,10 @@ These are some of the original papers dealing with ARC.
 - [Adaptive Cubic Regularization Algorithm Part 1,](https://link.springer.com/content/pdf/10.1007/s10107-009-0286-5.pdf) [Part 2](https://link.springer.com/content/pdf/10.1007/s10107-009-0337-y.pdf): Original ARC paper
 - [Adaptive Cubic Regularization Algorithm](https://people.maths.ox.ac.uk/cartis/papers/cgt32.pdf): Original proposal of the adaptive version of ARC
 
+Summary of references:
+- [Newton-Type Methods for Non-Convex Optimization Under Inexact Hessian Information](https://arxiv.org/abs/1708.07164): main paper: relaxed conditions from original ARC, subsampling Hessian, true gradient. [Second-Order Optimization for Non-Convex Machine Learning: An Empirical Study](https://arxiv.org/abs/1708.07827) is the empirical study that supplements this paper.
+- [Inexact Non-Convex Newton-Type Methods](https://arxiv.org/abs/1802.06925): follow-up of main paper and implemented subsampled gradient as well.
+- [Adaptive Cubic Regularization Methods with Inexact Hessian](https://arxiv.org/abs/1808.06239): Error tolerance of Condition 3 from the main paper is adpatively chosen instead.
 ## Abstract
 We...
 
