@@ -1,25 +1,6 @@
 # Approximate Hessian Based ARC for Non-Convex Optimization
 Course project for APPM 5630 - Advanced Convex Optimization, Spring 2021.
 
-We mainly follow the ideas presented in the following papers:
-- [Newton-Type Methods for Non-Convex Optimization Under Inexact Hessian Information](https://arxiv.org/abs/1708.07164)
-- [Second-Order Optimization for Non-Convex Machine Learning: An Empirical Study](https://arxiv.org/abs/1708.07827)
-- [Inexact Non-Convex Newton-Type Methods](https://arxiv.org/abs/1802.06925)
-
-These are some other potentially useful papers related to the topic.
-- [Newton Sketch and Sub-Sampled Newton Methods](https://arxiv.org/abs/1705.06211) (gist: subsampling is better)
-- [PyHessian -- for Neural Networks](https://arxiv.org/abs/1912.07145)
-- [Adaptive Cubic Regularization Methods with Inexact Hessian](https://arxiv.org/abs/1808.06239) (This is the "dynamic" ARC, worth reading since it contains a lot of implementation details, although no code since it was written in Fortran...)
-- [Sub-sampled Cubic Regularization for Non-convex Optimization](https://arxiv.org/abs/1705.05933): This is the paper for SCR
-
-These are some of the original papers dealing with ARC.
-- [Adaptive Cubic Regularization Algorithm Part 1,](https://link.springer.com/content/pdf/10.1007/s10107-009-0286-5.pdf) [Part 2](https://link.springer.com/content/pdf/10.1007/s10107-009-0337-y.pdf): Original ARC paper
-- [Adaptive Cubic Regularization Algorithm](https://people.maths.ox.ac.uk/cartis/papers/cgt32.pdf): Original proposal of the adaptive version of ARC
-
-Summary of references:
-- [Newton-Type Methods for Non-Convex Optimization Under Inexact Hessian Information](https://arxiv.org/abs/1708.07164): main paper: relaxed conditions from original ARC, subsampling Hessian, true gradient. [Second-Order Optimization for Non-Convex Machine Learning: An Empirical Study](https://arxiv.org/abs/1708.07827) is the empirical study that supplements this paper.
-- [Inexact Non-Convex Newton-Type Methods](https://arxiv.org/abs/1802.06925): follow-up of main paper and implemented subsampled gradient as well.
-- [Adaptive Cubic Regularization Methods with Inexact Hessian](https://arxiv.org/abs/1808.06239): Error tolerance of Condition 3 from the main paper is adpatively chosen instead.
 ## Abstract
 We...
 
@@ -33,6 +14,7 @@ We have until April 23 to get everything done.
 1. 03/06 - 03/13:
   - Implement TR (Jaden)
   - Implement ARC (Cooper)
+
 2. 03/13 - 03/20:
   - Finish testing ARC (Cooper)
   - Add pre-existing ARC implementation (Jaden): SCR implementation of full Hessian (cholesky) ARC exists, porting my implementation to python might not be worth the time right now since we just want to use it to check but not in experiment (too slow), I will focus on understanding sub-sampling first.
@@ -40,9 +22,9 @@ We have until April 23 to get everything done.
   - Start on logistic regression spambase problem (Jaden)
 
 3. 03/21 - 03/28
-  - get shallow NN spambase problem working via pytorch (both)
-  - write outline for reference papers (Jaden)
-  - write the theoretic background section of the paper if time permitted (both)
+  - Get shallow NN spambase problem working via pytorch (both)
+  - Write outline for reference papers (Jaden)
+  - Write the theoretic background section of the paper if time permitted (both)
 
 ### Other plans
 - Further understand and explicitly describe the conditions and requirements on the objective function for this method.
@@ -56,22 +38,44 @@ We have until April 23 to get everything done.
 ## Repository Structure
 - *core*: Contains all optimization algorithm details
   - *hessian.py*: Methods for sub-sampling hessian
-  - *pytorch.py*: Interaction with pytorch for use in neural networks
+  - *pytorch.py*: Interaction with PyTorch for use in neural networks
   - *arc*: Adaptive Regularization with Cubics algorithm implementation
 - *problems*: Various target problems for applying our methods
   - *svd.py*: Compute SVD factorization using non-convex optimization
-  - *spambase*: Spambase classification task
+  - *spambase*: Spambase classification task via standard Logistic Regression and a shallow NN
 
 ## Requirements
 - numpy
 - pytorch
 - scipy
 
-## Other Resources
+# Resources and References
+There is a large amount of prior research on this subject that has inspired our work and provided invaluable reference. These sources have been organized below by publication date, authors, and material. Links to papers and code repositories have been provided when possible.
+
+- Introduction of Adaptive Cubic Regularization (ARC) methods. The first two papers consider unconstrained optimization of convex problems, while the third extends the work to include non-convex problems.
+  - Adaptive Cubic Regularization Methods for Unconstrained Optimization [Part 1](https://link.springer.com/content/pdf/10.1007/s10107-009-0286-5.pdf), [Part 2](https://link.springer.com/content/pdf/10.1007/s10107-009-0337-y.pdf)
+  - [An Adaptive Cubic Regularization Algorithm for Non-Convex Optimization](https://people.maths.ox.ac.uk/cartis/papers/cgt32.pdf)
+
+- As stated by the authors this appears to be the first work with strong results on sub-sampling in ARC for non-convex optimization. They also specifically consider the application to machine learning via finite-sum minimization.
+  - [Sub-Sampled Cubic Regularization for Non-Convex Optimization](https://arxiv.org/abs/1705.05933)
+    - [GitHub Repository](https://github.com/dalab/subsampled_cubic_regularization)
+
+- The following three papers come from a similar set of authors and were the original inspiration for our work. All three deal with non-convex optimization through Newton-type methods (e.g. ARC) using approximate hessian information via sub-sampling. The first paper establishes the theory for their approach with the second being more of a numerical study.
+  - [Newton-Type Methods for Non-Convex Optimization Under Inexact Hessian Information](https://arxiv.org/abs/1708.07164)
+  - [Second-Order Optimization for Non-Convex Machine Learning: An Empirical Study](https://arxiv.org/abs/1708.07827)
+    - [GitHub Repository](https://github.com/git-xp/Non-Convex-Newton)
+  - [Inexact Non-Convex Newton-Type Methods](https://arxiv.org/abs/1802.06925)
+    - [GitHub Repository](https://github.com/yaozhewei/Inexact_Newton_Method)
+
+- In this paper a dynamic version of ARC is introduced where the degree of accuracy in the hessian sub-sampling changes adaptively.
+  - [Adaptive Cubic Regularization Methods with Inexact Hessian](https://arxiv.org/abs/1808.06239)
+
+- This work introduces a software tool for extracting hessian information from a neural network.
+  - [PyHessian: Neural Networks Through the Lens of the Hessian](https://arxiv.org/abs/1912.07145)
+
+
+## Other References
 - [Numerical Optimization by Nocedal and Wright](https://link.springer.com/book/10.1007%2F978-0-387-40065-5)
-- [Second-Order Optimization Git Repo](https://github.com/git-xp/Non-Convex-Newton)
-- [Inexact Newton-Type Methods Git Rrepo](https://github.com/yaozhewei/Inexact_Newton_Method)
 - [Jadens Original ARC Implementation](https://github.com/tholdem/MatrixMultiplication/blob/master/CubicRegularization/cubicReg.m)
 - [Somebodys Git Repo for ARC](https://github.com/cjones6/cubic_reg)
 - [PyTorch Optimizer Documentation](https://pytorch.org/docs/stable/optim.html)
-- [SCR Git Repo](https://github.com/dalab/subsampled_cubic_regularization)
