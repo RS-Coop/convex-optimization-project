@@ -60,7 +60,7 @@ There is a large amount of prior research on this subject that has inspired our 
   - [Sub-Sampled Cubic Regularization for Non-Convex Optimization](https://arxiv.org/abs/1705.05933)
     - [GitHub Repository](https://github.com/dalab/subsampled_cubic_regularization)
 
-- The following three papers come from a similar set of authors and were the original inspiration for our work. All three deal with non-convex optimization through Newton-type methods (e.g. ARC) using approximate hessian information via sub-sampling. The first paper establishes the theory for their approach with the second being more of a numerical study.
+- The following three papers come from a similar set of authors and were the original inspiration for our work. All three deal with non-convex optimization through Newton-type methods (e.g. ARC) using approximate hessian information via sub-sampling. The first paper establishes the theory for their approach with the second being more of a numerical study. The third paper introduces inexact gradient information in addition to sub-sampled hessian.
   - [Newton-Type Methods for Non-Convex Optimization Under Inexact Hessian Information](https://arxiv.org/abs/1708.07164)
   - [Second-Order Optimization for Non-Convex Machine Learning: An Empirical Study](https://arxiv.org/abs/1708.07827)
     - [GitHub Repository](https://github.com/git-xp/Non-Convex-Newton)
