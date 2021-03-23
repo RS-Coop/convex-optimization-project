@@ -55,10 +55,6 @@ There is a large amount of prior research on this subject that has inspired our 
 - Introduction of Adaptive Cubic Regularization (ARC) methods. The first two papers consider unconstrained optimization of convex problems, while the third extends the work to include non-convex problems.
   - Adaptive Cubic Regularization Methods for Unconstrained Optimization [Part 1](https://link.springer.com/content/pdf/10.1007/s10107-009-0286-5.pdf), [Part 2](https://link.springer.com/content/pdf/10.1007/s10107-009-0337-y.pdf)
   - [An Adaptive Cubic Regularization Algorithm for Non-Convex Optimization](https://people.maths.ox.ac.uk/cartis/papers/cgt32.pdf)
-  - These papers by Cartis et. al. first establish an adaptive model to approximate the function in a trust region:
-  $$m_k(s) := f(x_k)+ s^T g_k + \frac{1}{2} s^T B_k s + \frac{1}{3} \sigma_k ||s||^3$$ where $B_k$ is the approximated Hessian and $g_k$ is the gradient, and $\sigma_k$ is the adaptive parameter that controls the amount of cubic regularization.
-  - Their sufficient condition for Hessian approximation is:
-  $$||(B_k-H(x_k))s_k||\leq C ||s_k||^2$$ where $H$ is the true Hessian function, $s_k$ is the step to take, and $C>0$.
 
 - As stated by the authors this appears to be the first work with strong results on sub-sampling in ARC for non-convex optimization. They also specifically consider the application to machine learning via finite-sum minimization.
   - [Sub-Sampled Cubic Regularization for Non-Convex Optimization](https://arxiv.org/abs/1705.05933)
