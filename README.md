@@ -27,7 +27,7 @@ We have until April 23 to get everything done.
   - Write the theoretic background section of the paper if time permitted (both)
 4. 03/28 - 04/04
   - Get ARC working with pytorch (Cooper)
-  - Finish a draft of theoretic section (Jaden)
+  - Finish a draft of theoretical section (Jaden)
   - Get more practice with pytorch tutorials (Jaden)
   - Start the experiment section if time permits (both)
 
