@@ -27,8 +27,8 @@ def _logisticError(w, X, y):
 
     return np.sum(np.abs(cls-y)/2)/y.shape[0]
 
-def spambase(method, kwargs={}:
-    data = pd.read_csv('./data/spambase.data')
+def spambase(method, kwargs={}):
+    data = pd.read_csv('./spambase/spambase.data')
 
     X = data.iloc[:,0:-2]
     y = data.iloc[:,-1]
