@@ -1,5 +1,5 @@
 '''
-Casting the logistic regression problem as a MLP neural
+Casting the logistic regression problem as an MLP neural
 network using PyTorch.
 '''
 import pandas as pd
@@ -15,9 +15,9 @@ class SpamBase(Dataset):
     def __init__(self, split, device, data_map=None):
         assert split in ['train', 'test']
 
-        self.data = pd.read_csv(f'./spambase/spambase_{split}.data')
+        self.data = pd.read_csv(f'./spambase/spambase_{split}.data', header=None)
 
-        self.device = device
+        self.device = torch.device(device)
 
         if data_map is None:
             self.data_map = lambda x: np.log(x+0.1)
@@ -28,10 +28,12 @@ class SpamBase(Dataset):
         return self.data.shape[0]
 
     def __getitem__(self, idx):
-        X = torch.tensor(self.data.iloc[idx, 0:-2].apply(self.data_map), dtype=torch.float)
-        y = torch.tensor(self.data.iloc[idx, -1], dtype=torch.float).reshape(-1)
+        X = torch.tensor(self.data.iloc[idx, 0:-1].apply(self.data_map),
+                            dtype=torch.float, device=self.device)
+        y = torch.tensor(self.data.iloc[idx, -1], dtype=torch.float,
+                            device=self.device).reshape(-1)
 
-        return {'features':X.to(self.device), 'labels':y.to(self.device)}
+        return {'features':X, 'labels':y}
 
 '''
 Simple 1 layer dense network for logistic regression
@@ -53,7 +55,9 @@ class Model(torch.nn.Module):
 Build the network, train, and validate potentially using our
 custom second order optimizer.
 '''
-def spambase(dataset='spambase', optim_method=None):
+def spambase(dataset='spambase', optim_method=None, learn_rate=0.001,
+                batch_size=100, epochs=20):
+
     #Check for GPU
     if torch.cuda.is_available():
         device = 'cuda:0'
@@ -62,11 +66,9 @@ def spambase(dataset='spambase', optim_method=None):
         device = 'cpu'
         print('Using CPU only.')
 
-    #Parameters
-    learn_rate = 0.001
+    #Check dataset
+    assert dataset in ['spambase']
     input_dim = 57
-    batch_size = 100
-    epochs = 20
 
     #Load the model, setup loss and optimizer
     model = Model(input_dim)
@@ -80,7 +82,8 @@ def spambase(dataset='spambase', optim_method=None):
 
     #Setup dataloader
     train = SpamBase('train', device=device)
-    trainloader = DataLoader(train, batch_size=batch_size, shuffle=True)
+    trainloader = DataLoader(train, batch_size=batch_size, shuffle=True,
+                            num_workers=4, pin_memory=True)
 
     #Now train the model
     print('Starting to train...')
@@ -99,7 +102,8 @@ def spambase(dataset='spambase', optim_method=None):
 
     #Validate
     test = SpamBase('test', device=device)
-    testloader = DataLoader(test, batch_size=batch_size, shuffle=False)
+    testloader = DataLoader(test, batch_size=batch_size, shuffle=False,
+                            num_workers=4, pin_memory=True)
 
     correct, total = 0, 0
     for features, labels in testloader:

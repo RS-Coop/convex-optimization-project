@@ -21,13 +21,13 @@ from .sub_problem import arcSub
 Approximate Adaptive Regularization with Cubics
 
 Input:
+    x0 -> Starting point
     F -> Objective function
     gradF -> Gradient of F (callable)
     hessF -> Hessian of F (callable)
-    x0 -> Starting point
-    eps_g -> Gradient tolerance
-    eps_h -> Hessian tolerance
     args -> Additional arguments for function, gradient, and hessian (optional)
+    eps_g -> Gradient tolerance (optional)
+    eps_h -> Hessian tolerance (optional)
     sigma -> Initial regularization parameter (0,inf) (optional)
     eta -> Step success (0,1] (optional)
     gamma -> Regularization update (1,inf) (optional)
@@ -38,12 +38,11 @@ Input:
 Output:
     x -> Minimizer
 
-NOTE: Can add multiple eta and gamma parameters for adaptiveness
 NOTE: Look into stopping condtions, code seems to be different than paper
 algorithm in sources.
 '''
-def arc(F, gradF, hessF, x0, eps_g, eps_h, args=(), sigma=1, eta_1=0.1, eta_2=0.9,
-        gamma_1=2, gamma_2=2, maxitr=1000, sub_method='lanczos'):
+def arc(x0, F, gradF, hessF, args=(), eps_g=1e-3, eps_h=1e-3, sigma=1, eta_1=0.1,
+        eta_2=0.9, gamma_1=2, gamma_2=2, maxitr=1000, sub_method='lanczos'):
 
     fails = 0 #Keep track of failed updates
 

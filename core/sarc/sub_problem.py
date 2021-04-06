@@ -1,18 +1,8 @@
 '''
-Autho: Cooper Simpson
-Date: March 12, 2021
-
-ARC sub-problem solvers.
-
-Here we implement methods for solving the regularized cubic minimization
-problem for ARC. A number of methods are implemented to be chosen at the users
-discretion.
+PyTorch implementation of ARC sub-problem Lanczos solver.
 '''
 
-import numpy as np
-import numpy.linalg as la
-from numpy.random import default_rng
-from scipy.optimize import minimize
+import torch
 
 '''
 Sub-problem objective function
@@ -24,17 +14,12 @@ def cubicGrad(s, g, H, sigma):
     return g + H@s + sigma*la.norm(s)*s
 
 '''
-Dispatcher for solution methods
-'''
-def arcSub(method, args, kw={}):
-    solver_map = {
-        'lanczos' : lanczos
-    }
+Generalized Lanczos method as described in the Non-Convex Newton and Inexact
+Newton papers.
 
-    return solver_map[method](*args, **kw)
+Run Lanczos iterations and then solve low-dim cubic problem with tri-diagonal
+matrix.
 
-'''
-Solvers: All have the following structure.
 Input:
     g -> Gradient
     H -> Hessian
@@ -42,15 +27,7 @@ Input:
     maxitr -> Maximum iterations (optional)
     tol -> Tolerance (optional)
 '''
-
-'''
-Generalized Lanczos method as described in the Non-Convex Newton and Inexact
-Newton papers.
-
-Run Lanczos iterations and then solve low-dim cubic problem with tri-diagonal
-matrix.
-'''
-def lanczos(g, H, sigma, maxitr=500, tol=1e-6):
+def arcSub(g, H, sigma, maxitr=500, tol=1e-6):
     d = g.shape[0]
     K = min(d, maxitr)
     Q = np.zeros((d, K))

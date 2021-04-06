@@ -61,3 +61,6 @@ def svd(method, kwargs={}, max_dim=10):
     sol = method(f, grad, H, x0, **kwargs)
 
     return f(sol)
+
+if __name__=='__main__':
+    pass

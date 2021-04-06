@@ -46,3 +46,6 @@ def spambase(method, kwargs={}):
     x = method(x0, func, grad, hess, args=args_train, **kwargs)
 
     return error(x, *args_test)
+
+if __name__=='__main__':
+    pass
