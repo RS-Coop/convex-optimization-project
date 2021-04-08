@@ -1,17 +1,43 @@
 '''
-PyTorch implementation of ARC sub-problem Lanczos solver.
+TensorFlow implementation of ARC sub-problem Lanczos solver.
 '''
 
-import torch
+import tensorflow as tf
+
+'''
+Inner product of two lists of tensors
+'''
+def group_dot(x, y):
+    return sum([tf.reduce_sum(tf.multiply(a, b)) for a,b in zip(x,y)])
+
+'''
+Update one list of tensors with other list of tensors
+'''
+def group_add(x, y):
+    return [tf.add(a,b) for a,b in zip(x,y)]
+
+'''
+Normalize list of tensors
+'''
+def group_normalize(x):
+    s = (group_product(x,x))**0.5
+
+    return [xi/s for xi in x]
+
+'''
+2-norm for a list of tensors
+'''
+def group_2norm(x):
+    return sum[tf.reduce_sum(xi**2) for xi in x]
 
 '''
 Sub-problem objective function
 '''
 def cubic(s, g, H, sigma):
-    return g.T@s + 0.5*s.T@H@s + (sigma/3)*(la.norm(s)**3)
+    return group_dot(g,s) + 0.5*(group_dot(s, H(s))) + (sigma/3)*(group_2norm(s)**3)
 
 def cubicGrad(s, g, H, sigma):
-    return g + H@s + sigma*la.norm(s)*s
+    return group_add(group_add(g + H(s)), [sigma*group_2norm(s)*si for si in s])
 
 '''
 Generalized Lanczos method as described in the Non-Convex Newton and Inexact
@@ -28,7 +54,7 @@ Input:
     tol -> Tolerance (optional)
 '''
 def arcSub(g, H, sigma, maxitr=500, tol=1e-6):
-    d = g.shape[0]
+    d = g.shape[0] #I think this should be total number of params
     K = min(d, maxitr)
     Q = np.zeros((d, K))
 

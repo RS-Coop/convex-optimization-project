@@ -9,6 +9,8 @@ import tensorflow as tf
 from tensorflow import keras
 from tensorflow.data import Dataset
 
+from hessian import back_over_back
+
 def loadSpamBase(split, batch_size):
     assert split in ['train', 'test']
 
@@ -36,13 +38,25 @@ class Model(keras.Model):
         x = self.linear(inputs)
 
         if training:
-            return self.sigmoid(x)
-        else:
             return x
+        else:
+            return self.sigmoid(x)
 
     '''Custom training method'''
-    # def train_step(self, data):
-    #     X, y = data
+    def train_step(self, data):
+        X, y = data
+
+        def closure(self, update):
+            #Compute update somehow
+
+            outputs = self(X, training=True)
+
+            return self.compiled_loss(outputs, y)
+
+        grads, hvp = back_over_back(self, X, y)
+
+        self.optimizer.perpare(closure, hvp)
+        self.optimizer.apply_gradients(zip(grads, self.trainable_variables))
 
     '''Custom test method'''
     # def test_step(self, data):
