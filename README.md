@@ -25,11 +25,18 @@ We have until April 23 to get everything done.
   - Get shallow NN spambase problem working via pytorch (both)
   - Write outline for reference papers (Jaden)
   - Write the theoretic background section of the paper if time permitted (both)
+
 4. 03/28 - 04/04
   - Get ARC working with pytorch (Cooper)
   - Finish a draft of theoretical section (Jaden)
   - Get more practice with pytorch tutorials (Jaden)
   - Start the experiment section if time permits (both)
+
+5. 04/10 - 04/17
+  - Clean up optimizer and try to improve (Cooper)
+  - Implement PyTorch Lightning to use profiler (Cooper)
+  - Implement MNIST dataset problem (Cooper)
+  - Go through papers and continue writing (Cooper/Both)
 
 ### Other plans
 - Further understand and explicitly describe the conditions and requirements on the objective function for this method.

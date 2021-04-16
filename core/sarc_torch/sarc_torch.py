@@ -17,6 +17,7 @@ def cubic_np(s, g, H, sigma):
 
     return func, grad
 
+
 '''Stochastic Adaptive Regularization with Cubics'''
 class SARC(Optimizer):
     '''
@@ -32,36 +33,18 @@ class SARC(Optimizer):
 
         super().__init__(params, defaults)
 
-    '''Get all parameter gradients in one tensor'''
-    def _getGradients(self):
-        grads = []
+    '''
+    Convert list of gradients to a single tensor.
+    '''
+    def _convertGrads(self, grads):
         grads_vec = []
-        params = []
 
-        for group in self.param_groups:
-            for p in group['params']:
-                if p.grad is not None:
-                    params.append(p)
-                    grads.append(p.grad.view(-1))
-                    grads_vec.append(p.grad.view(-1).data)
+        for g in grads:
+            if g is not None: #Not sure if this is a check I need to make
+                grads_vec.append(g.view(-1).data)
 
-        self.grads = grads
-        self.params = params
+        return torch.cat(grads_vec, 0)
 
-        return torch.cat(grads_vec, 0) #.detach()?
-
-    '''
-    This is neccessary to avoid a memory leak as per PyTorch documentation
-    on backward. It is probably better to change things so that we take the
-    gradients as an argument in step and then use autograd.grad in training.
-    '''
-    def _reset(self):
-        for group in self.param_groups:
-            for p in group['params']:
-                p.grad = None
-
-        self.grads = None
-        self.params = None
 
     '''
     Hessian vector product
@@ -69,17 +52,26 @@ class SARC(Optimizer):
     v -> The vector in question
     grads -> Gradients of the model
     '''
-    def _hvp(self, v):
-        #Note that this assumes a single group which at this point is all there
-        #should be.
-        return torch.autograd.grad(self.grads, self.params,
-                                    grad_outputs=v, only_inputs=True,
-                                    retain_graph=True)[0].view(-1).data#.detach()?
+    def _hvp(self, v, gradsH):
+        '''The problem here is that we need v to be a list of tensors like gradsH,
+        but we have it as a single tensor. The alternative is to change how we
+        do math with v and leave it as a list.'''
+        vec = []
+        start = 0
+        for g in gradsH:
+            vec.append(v[start:start+torch.numel(g)].view(g.shape))
+            start += torch.numel(g)
+
+        hvs = torch.autograd.grad(gradsH, self.param_groups[0]['params'],
+                                    grad_outputs=vec, only_inputs=True,
+                                    retain_graph=True)
+
+        return torch.cat([hv.view(-1).data for hv in hvs])
 
 
     '''Evaluate cubic sub-problem and its gradient'''
-    def _cubic(self, s, g, sigma):
-        Hs = self._hvp(s)
+    def _cubic(self, s, g, gH, sigma):
+        Hs = self._hvp(s, gH)
         s_norm = torch.norm(s, 2)
 
         func = torch.dot(g, s) + 0.5*torch.dot(s, Hs) + (sigma/3)*s_norm.pow(3)
@@ -87,10 +79,11 @@ class SARC(Optimizer):
 
         return func, grad
 
+
     '''Solve the cubic sub-problem using generalized Lanczos'''
     #NOTE: There are a few places in here where I am not sure if I should be
     #worried about GPU stuff e.g. tensor creation.
-    def _subProbSolve(self, g, sigma, maxitr=500, tol=1e-6):
+    def _subProbSolve(self, g, gH, sigma, maxitr=10, tol=1e-6):
         d = torch.numel(g)
         K = min(d, maxitr)
         Q = torch.zeros((d, K))
@@ -104,7 +97,7 @@ class SARC(Optimizer):
 
         for i in range(K):
             Q[:,i] = q
-            v = self._hvp(q)
+            v = self._hvp(q, gH)
             T[i,i] = torch.dot(q, v)
 
             #Orthogonalize
@@ -121,8 +114,10 @@ class SARC(Optimizer):
             q = r/b
 
         #Compute last diagonal element
-        T[i, i] = torch.dot(q, self._hvp(q))
+        T[i, i] = torch.dot(q, self._hvp(q, gH))
 
+        '''EDIT: Check and see if these should be i+1 here and not i, I think
+        there may have been a problem with how matlab vs python slicing works.'''
         T = T[:i, :i]
         Q = Q[:, :i]
 
@@ -136,31 +131,35 @@ class SARC(Optimizer):
         #this in pytorch form
         z0 = np.zeros(i)
         out = minimize(cubic_np, z0, args=(gt.numpy(), T.numpy(), sigma),
-                        method='BFGS', tol=tol, jac=True)
+                        method='L-BFGS-B', tol=tol, jac=True)
 
         z = out['x']
         m = out['fun']
 
         return torch.matmul(Q, torch.from_numpy(z).float()), m
 
+
     '''Update model parameters'''
     def _update(self, s):
         start = 0
 
-        for p in self.params:
+        for p in self.param_groups[0]['params']:
             n = torch.numel(p)
-            p.data.add_(s[start:n])
+            p.data.add_(s[start:start+n].view(p.shape))
 
             start += n
+
 
     '''
     Step forward and update parameters using optimizer.
 
+    grads -> Full list of gradients
+    gradsH -> Partial list of gradients for sub-sampling Hessian
     loss -> Current loss value
     loss_fn -> Recomputes loss without retaining gradient information
     closure -> Clears gradients and re-evaluates model
     '''
-    def step(self, loss, loss_fn, closure=None):
+    def step(self, grads, gradsH, loss, loss_fn, closure=None):
         sigma = self.param_groups[0]['sigma']
         eta_1 = self.param_groups[0]['eta_1']
         eta_2 = self.param_groups[0]['eta_2']
@@ -170,10 +169,10 @@ class SARC(Optimizer):
 
         fails = 0
 
-        grad_vec = self._getGradients()
+        grad_vec = self._convertGrads(grads)
 
         while fails < sub_problem_fails:
-            s, m = self._subProbSolve(grad_vec, sigma)
+            s, m = self._subProbSolve(grad_vec, gradsH, sigma)
 
             #Need to figure out how its gonna work with updating parameters
             self._update(s)
@@ -195,5 +194,3 @@ class SARC(Optimizer):
 
         #Update sigma
         self.param_groups[0]['sigma'] = sigma
-
-        self._reset()
