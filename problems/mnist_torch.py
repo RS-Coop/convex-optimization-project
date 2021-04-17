@@ -8,6 +8,8 @@ import torch.nn.functional as F
 from torch.utils.data import DataLoader
 from torchvision import datasets, transforms
 
+import time
+import matplotlib.pyplot as plt
 
 '''
 Simple dense network for image classification
@@ -44,7 +46,7 @@ class CNN(torch.nn.Module):
 Build model, train, and validate -- potentially using second order optimizer
 '''
 def mnist(data_dir, model_type='dense', optim_method=None, batch_size=64,
-            epochs=1, learn_rate=0.01, order=1, sample_rate=0.01):
+            epochs=1, learn_rate=0.01, order=1, sample_rate=0.1):
 
     #Check for GPU
     if torch.cuda.is_available():
@@ -85,8 +87,9 @@ def mnist(data_dir, model_type='dense', optim_method=None, batch_size=64,
     #Train
     model.train()
     print('Starting to train...')
+    e_tic = time.perf_counter()
     for epoch in range(epochs):
-        for data, labels in trainloader:
+        for i, (data, labels) in enumerate(trainloader):
             def loss_fn():
                 with torch.no_grad():
                     outputs = model(data)
@@ -116,16 +119,43 @@ def mnist(data_dir, model_type='dense', optim_method=None, batch_size=64,
                 gradsH = torch.autograd.grad(loss(model(data[idx,...]), labels[idx,...]),
                                                 model.parameters(), create_graph=True)
 
-                optimizer.step(grads, gradsH, loss_val, loss_fn)
+                s_tic = time.perf_counter()
+                optimizer.step(grads, gradsH, loss_val.data, loss_fn)
+                s_toc = time.perf_counter()
 
             else:
                 model.zero_grad()
                 outputs = model(data)
                 loss_val = loss(outputs, labels)
                 loss_val.backward(create_graph=True)
+
+                s_tic = time.perf_counter()
                 optimizer.step()
+                s_toc = time.perf_counter()
+
+            '''
+            Print batch specific details: step runtime,
+            '''
+            if i%50 == 0:
+                print(f'Epoch {epoch}, Batch {i}: Loss = {loss_val}, Step Time = {s_toc-s_tic}')
+
+        e_toc = time.perf_counter()
+        '''
+        Print epoch specifc details
+        '''
+        print(f'\nEpoch {epoch}: Total Time = {e_toc-e_tic}')
 
     print('Training finished.')
+
+    '''
+    Print optimzer training details
+    '''
+    if order==2:
+        info = optimizer.getInfo()
+        print(f'\nOptimizer timing: HVP {info[0]}, Scipy Minimize {info[1]}, Sub-Problem Time {info[2]}')
+        # plt.plot(range(len(info[3])), info[3])
+        # plt.show()
+
 
     #Validate
     test = datasets.MNIST(data_dir, train=False, download=True, transform=transform)

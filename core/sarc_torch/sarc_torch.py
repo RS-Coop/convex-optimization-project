@@ -6,6 +6,8 @@ from torch.optim import Optimizer
 from scipy.optimize import minimize
 import numpy as np
 
+import time
+
 '''
 Helper functions
 '''
@@ -33,6 +35,11 @@ class SARC(Optimizer):
 
         super().__init__(params, defaults)
 
+        self.hvp_time, self.hvp_calls = 0.0, 0
+        self.sub_time, self.sub_calls = 0.0, 0
+        self.scipy_time, self.scipy_calls = 0.0, 0
+        self.p = []
+
     '''
     Convert list of gradients to a single tensor.
     '''
@@ -56,6 +63,9 @@ class SARC(Optimizer):
         '''The problem here is that we need v to be a list of tensors like gradsH,
         but we have it as a single tensor. The alternative is to change how we
         do math with v and leave it as a list.'''
+        self.hvp_calls += 1
+        tic = time.perf_counter()
+
         vec = []
         start = 0
         for g in gradsH:
@@ -66,7 +76,11 @@ class SARC(Optimizer):
                                     grad_outputs=vec, only_inputs=True,
                                     retain_graph=True)
 
-        return torch.cat([hv.view(-1).data for hv in hvs])
+        g_vec = torch.cat([hv.view(-1).data for hv in hvs])
+
+        self.hvp_time += time.perf_counter()-tic
+
+        return g_vec
 
 
     '''Evaluate cubic sub-problem and its gradient'''
@@ -130,8 +144,14 @@ class SARC(Optimizer):
         #NOTE: This is the last thing I need to figure out, i.e. how to put
         #this in pytorch form
         z0 = np.zeros(i)
+
+        self.scipy_calls += 1
+        tic = time.perf_counter()
+
         out = minimize(cubic_np, z0, args=(gt.numpy(), T.numpy(), sigma),
                         method='L-BFGS-B', tol=tol, jac=True)
+
+        self.scipy_time += time.perf_counter() - tic
 
         z = out['x']
         m = out['fun']
@@ -172,11 +192,15 @@ class SARC(Optimizer):
         grad_vec = self._convertGrads(grads)
 
         while fails < sub_problem_fails:
+            self.sub_calls += 1
+            tic = time.perf_counter()
             s, m = self._subProbSolve(grad_vec, gradsH, sigma)
+            self.sub_time += time.perf_counter() - tic
 
             #Need to figure out how its gonna work with updating parameters
             self._update(s)
             p = (loss - loss_fn())/(-m)
+            self.p.append(p)
 
             #Not a good update
             if p<eta_1:
@@ -194,3 +218,12 @@ class SARC(Optimizer):
 
         #Update sigma
         self.param_groups[0]['sigma'] = sigma
+
+    '''
+    Print performance details
+    '''
+    def getInfo(self):
+        return (self.hvp_time/self.hvp_calls,
+                self.scipy_time/self.scipy_calls,
+                self.sub_time/self.sub_calls,
+                self.p)
