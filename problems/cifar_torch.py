@@ -42,7 +42,7 @@ class CNN(torch.nn.Module):
 Build model, train, and validate -- potentially using second order optimizer
 '''
 def cifar(data_dir, optim_method=None, batch_size=4, epochs=1, learn_rate=0.01,
-            order=1, sample_rate=0.1):
+            order=1, sample_rate=0.1, **kw):
 
     #Check for GPU
     if torch.cuda.is_available():
@@ -61,7 +61,7 @@ def cifar(data_dir, optim_method=None, batch_size=4, epochs=1, learn_rate=0.01,
     loss = torch.nn.CrossEntropyLoss()
 
     if optim_method is not None and order == 2:
-        optimizer = optim_method(model.parameters())
+        optimizer = optim_method(model.parameters(), **kw)
     elif optim_method is not None:
         optimizer = optim_method(model.parameters(), lr=learn_rate)
     else:

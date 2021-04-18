@@ -72,7 +72,7 @@ class OneHidden(torch.nn.Module):
 Build model, train, and validate -- potentially using second order optimizer.
 '''
 def spambase(dataroot, model_type='zero', optim_method=None, order=1, batch_size=64,
-                epochs=1, learn_rate=0.01):
+                epochs=1, learn_rate=0.01, **kw):
 
     #Check for GPU
     if torch.cuda.is_available():
@@ -100,7 +100,7 @@ def spambase(dataroot, model_type='zero', optim_method=None, order=1, batch_size
     loss = torch.nn.BCEWithLogitsLoss()
 
     if optim_method is not None and order == 2:
-        optimizer = optim_method(model.parameters())
+        optimizer = optim_method(model.parameters(), **kw)
     elif optim_method is not None:
         optimizer = optim_method(model.parameters(), lr=learn_rate)
     else:
