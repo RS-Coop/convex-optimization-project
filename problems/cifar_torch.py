@@ -1,5 +1,5 @@
 '''
-MNIST hand-written digits classification task using Pytorch
+CIFAR10 image classification task using PyTorch
 '''
 import numpy as np
 
@@ -12,23 +12,25 @@ import time
 import matplotlib.pyplot as plt
 
 '''
-Simple dense network for image classification
+Simple CNN for image classification
 '''
-class Dense(torch.nn.Module):
-    def __init__(self, n1=128, n2=128):
+class CNN(torch.nn.Module):
+    def __init__(self):
         super().__init__()
 
-        self.fc1 = torch.nn.Linear(28 * 28, n1)
-        self.fc2 = torch.nn.Linear(n1, n2)
-        self.fc3 = torch.nn.Linear(n2, 10)
-        self.dropout = torch.nn.Dropout(0.5)
+        self.conv1 = torch.nn.Conv2d(3,16,5)
+        self.pool = torch.nn.MaxPool2d(2,2)
+        self.conv2 = torch.nn.Conv2d(16,32,5)
+        self.fc1 = torch.nn.Linear(32*5*5, 120)
+        self.fc2 = torch.nn.Linear(120, 84)
+        self.fc3 = torch.nn.Linear(84, 10)
 
     def forward(self, x):
-        x = x.view(-1, 28 * 28)
+        x = self.pool(F.relu(self.conv1(x)))
+        x = self.pool(F.relu(self.conv2(x)))
+        x = x.view(-1, 32*5*5)
         x = F.relu(self.fc1(x))
-        x = self.dropout(x)
         x = F.relu(self.fc2(x))
-        x = self.dropout(x)
         x = self.fc3(x)
         return x
 
@@ -39,7 +41,7 @@ class Dense(torch.nn.Module):
 '''
 Build model, train, and validate -- potentially using second order optimizer
 '''
-def mnist(data_dir, optim_method=None, batch_size=128, epochs=1, learn_rate=0.01,
+def cifar(data_dir, optim_method=None, batch_size=4, epochs=1, learn_rate=0.01,
             order=1, sample_rate=0.1):
 
     #Check for GPU
@@ -53,7 +55,7 @@ def mnist(data_dir, optim_method=None, batch_size=128, epochs=1, learn_rate=0.01
     #Only gonna use cpu for now
     device = torch.device('cpu')
 
-    model = Dense()
+    model = CNN()
 
     model.to(device)
     loss = torch.nn.CrossEntropyLoss()
@@ -63,12 +65,13 @@ def mnist(data_dir, optim_method=None, batch_size=128, epochs=1, learn_rate=0.01
     elif optim_method is not None:
         optimizer = optim_method(model.parameters(), lr=learn_rate)
     else:
-        optimizer = torch.optim.SGD(model.parameters(), lr=learn_rate)
+        optimizer = torch.optim.SGD(model.parameters(), lr=learn_rate, momentume=0.9)
 
     #Setup dataloader
-    transform = transforms.Compose([transforms.ToTensor()])
+    transform = transforms.Compose([transforms.ToTensor(),
+                                    transforms.Normalize((0.5,0.5,0.5), (0.5,0.5,0.5))])
 
-    train = datasets.MNIST(data_dir, train=True, download=True, transform=transform)
+    train = datasets.CIFAR10(data_dir, train=True, download=True, transform=transform)
     trainloader = DataLoader(train, batch_size=batch_size, shuffle=True,
                                 num_workers=4, pin_memory=True)
 
@@ -148,7 +151,7 @@ def mnist(data_dir, optim_method=None, batch_size=128, epochs=1, learn_rate=0.01
 
 
     #Validate
-    test = datasets.MNIST(data_dir, train=False, download=True, transform=transform)
+    test = datasets.CIFAR10(data_dir, train=False, download=True, transform=transform)
     testloader = DataLoader(train, batch_size=batch_size, shuffle=True,
                                 num_workers=4, pin_memory=True)
 

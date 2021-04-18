@@ -8,6 +8,7 @@ from torch.optim import SGD
 from core.sarc_torch.sarc_torch import SARC
 from problems.spambase_torch import spambase
 from problems.mnist_torch import mnist
+from problems.cifar_torch import cifar
 
 if __name__=='__main__':
     parser = argparse.ArgumentParser(description='Run ARC and SARC tests')
@@ -32,6 +33,10 @@ if __name__=='__main__':
 
     elif args.test == 'mnist':
         mnist(data_dir='problems/mnist', optim_method=method,
+                epochs=args.epochs, order=args.order)
+
+    elif args.test == 'cifar':
+        cifar(data_dir='problems/cifar10', optim_method=method,
                 epochs=args.epochs, order=args.order)
 
     else: print('Specified test not supported.')

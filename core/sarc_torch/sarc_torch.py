@@ -76,7 +76,7 @@ class SARC(Optimizer):
                                     grad_outputs=vec, only_inputs=True,
                                     retain_graph=True)
 
-        g_vec = torch.cat([hv.view(-1).data for hv in hvs])
+        g_vec = torch.cat([hv.reshape(-1).data for hv in hvs])
 
         self.hvp_time += time.perf_counter()-tic
 
@@ -97,19 +97,19 @@ class SARC(Optimizer):
     '''Solve the cubic sub-problem using generalized Lanczos'''
     #NOTE: There are a few places in here where I am not sure if I should be
     #worried about GPU stuff e.g. tensor creation.
-    def _subProbSolve(self, g, gH, sigma, maxitr=10, tol=1e-6):
+    def _subProbSolve(self, g, gH, sigma, maxitr=2, tol=1e-6):
         d = torch.numel(g)
         K = min(d, maxitr)
         Q = torch.zeros((d, K))
 
         q = g/torch.norm(g)
 
-        T = torch.zeros((K+1, K+1))
+        T = torch.zeros((K, K))
 
         g_norm = torch.norm(g, 2)
         tol = min(tol, tol*g_norm)
 
-        for i in range(K):
+        for i in range(K-1):
             Q[:,i] = q
             v = self._hvp(q, gH)
             T[i,i] = torch.dot(q, v)
@@ -128,12 +128,10 @@ class SARC(Optimizer):
             q = r/b
 
         #Compute last diagonal element
-        T[i, i] = torch.dot(q, self._hvp(q, gH))
+        T[i+1, i+1] = torch.dot(q, self._hvp(q, gH))
 
-        '''EDIT: Check and see if these should be i+1 here and not i, I think
-        there may have been a problem with how matlab vs python slicing works.'''
-        T = T[:i, :i]
-        Q = Q[:, :i]
+        T = T[:i+2, :i+2]
+        Q = Q[:, :i+2]
 
         if torch.norm(T) < tol and g_norm < 1e-16:
             return torch.zeros(d), 0
@@ -143,7 +141,7 @@ class SARC(Optimizer):
         #Optimization
         #NOTE: This is the last thing I need to figure out, i.e. how to put
         #this in pytorch form
-        z0 = np.zeros(i)
+        z0 = np.zeros(i+2)
 
         self.scipy_calls += 1
         tic = time.perf_counter()
@@ -157,6 +155,10 @@ class SARC(Optimizer):
         m = out['fun']
 
         return torch.matmul(Q, torch.from_numpy(z).float()), m
+
+
+    def _subProbSolve2():
+        pass
 
 
     '''Update model parameters'''
@@ -202,19 +204,20 @@ class SARC(Optimizer):
             p = (loss - loss_fn())/(-m)
             self.p.append(p)
 
-            #Not a good update
+            #bad update
             if p<eta_1:
                 #Undo update
                 self._update(-s)
-
-            #Okay update
-            if p>=eta_2:
-                sigma = max(sigma/gamma_2, 1e-16)
-
-            #Bad update
-            else:
                 sigma = gamma_1*sigma
                 fails += 1
+
+            #great update
+            elif p>=eta_2:
+                sigma = max(sigma/gamma_2, 1e-16)
+                break
+
+            else:
+                break
 
         #Update sigma
         self.param_groups[0]['sigma'] = sigma

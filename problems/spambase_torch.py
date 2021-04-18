@@ -156,7 +156,7 @@ def spambase(dataroot, model_type='zero', optim_method=None, order=1, batch_size
                 model.zero_grad()
                 outputs = model(data)
                 loss_val = loss(outputs, labels)
-                loss_val.backward(create_graph=True)
+                loss_val.backward()
                 optimizer.step()
 
     print('Training finished.')
