@@ -12,43 +12,18 @@ import time
 import matplotlib.pyplot as plt
 
 '''
-Simple dense network for image classification
-'''
-class Dense(torch.nn.Module):
-    def __init__(self, n1=128, n2=128):
-        super().__init__()
-
-        self.fc1 = torch.nn.Linear(28 * 28, n1)
-        self.fc2 = torch.nn.Linear(n1, n2)
-        self.fc3 = torch.nn.Linear(n2, 10)
-        self.dropout = torch.nn.Dropout(0.5)
-
-    def forward(self, x):
-        x = x.view(-1, 28 * 28)
-        x = F.relu(self.fc1(x))
-        x = self.dropout(x)
-        x = F.relu(self.fc2(x))
-        x = self.dropout(x)
-        x = self.fc3(x)
-        return x
-
-    def predict(self, x):
-        out = self.forward(x)
-        return torch.argmax(F.softmax(out, dim=1), dim=1)
-
-'''
 Build model, train, and validate -- potentially using second order optimizer
 '''
 def mnist(data_dir, optim_method=None, batch_size=128, epochs=1, learn_rate=0.01,
-            order=1, sample_rate=0.1, **kw):
+            order=1, sample_rate=0.03, **kw):
 
     #Check for GPU
-    if torch.cuda.is_available():
-        device = 'cuda:0'
-        print('Using GPU acceleration.')
-    else:
-        device = 'cpu'
-        print('Using CPU only.')
+    # if torch.cuda.is_available():
+    #     device = 'cuda:0'
+    #     print('Using GPU acceleration.')
+    # else:
+    #     device = 'cpu'
+    #     print('Using CPU only.')
 
     #Only gonna use cpu for now
     device = torch.device('cpu')

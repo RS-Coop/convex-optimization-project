@@ -3,32 +3,16 @@ Custom PyTorch optimizer class that uses second order ARC.
 '''
 import torch
 from torch.optim import Optimizer
+
+import numpy as np
 from scipy.optimize import minimize
 from scipy.sparse.linalg import LinearOperator, eigsh
-import numpy as np
 
 import time
 
 '''
 Helper functions
 '''
-'''Add two lists of tensors'''
-def group_add(a, b):
-    return [torch.sum(av+bv) for (av,bv) in zip(a,b)]
-
-'''Dot product between two lists of tensors'''
-def group_dot(a, b):
-    s = 0.0
-    for (av, bv) in zip(a, b):
-        s += torch.dot(av, bv)
-    return s
-
-'''Normalize a list of tensors'''
-def group_normalize(a):
-    norm = group_dot(a,a)**0.5
-
-    return [ai/norm for ai in a]
-
 '''Convert a list of tensors to a single 1D tensor'''
 def list2vec(l):
     vec = [li.view(-1).data for li in l]
@@ -55,8 +39,8 @@ class SARC(Optimizer):
     kw -> Optimizer keywords
     '''
     def __init__(self, params, sigma=1, eta_1=0.1, eta_2=0.9, gamma_1=2,
-                    gamma_2=2, sub_prob_fails=1, sub_prob_max_iters=10,
-                    sub_prob_tol=1e-2, sub_prob_method='lanczos'):
+                    gamma_2=2, sub_prob_fails=1, sub_prob_max_iters=50,
+                    sub_prob_tol=1e-2, sub_prob_method='eigsh'):
 
         defaults = dict(sigma=sigma, eta_1=eta_1, eta_2=eta_2, gamma_1=gamma_1,
                         gamma_2=gamma_2, sub_prob_fails=sub_prob_fails,
@@ -65,13 +49,14 @@ class SARC(Optimizer):
 
         self.hvp_time, self.hvp_calls = 0.0, 0
         self.sub_time, self.sub_calls = 0.0, 0
-        self.scipy_time, self.scipy_calls = 0.0, 0
-        self.p = []
+        self.minimize_time, self.minimize_calls = 0.0, 0
+        self.rho = []
+        self.props = []
 
         if sub_prob_method == 'lanczos':
-            self.subProbSolve = self._subProbSolve_lanczos
+            self._subProbSetup = self._lanczos
         elif sub_prob_method == 'eigsh':
-            self.subProbSolve = self._subProbSolve_eigsh
+            self._subProbSetup = self._eig
         else:
             raise ValueError('Sub-problem solution method not supported.')
 
@@ -85,6 +70,7 @@ class SARC(Optimizer):
     grads -> Gradients of the model
     '''
     def _hvp(self, v, gradsH):
+        self.props[-1] += 1 #Add a propagation for the backward pass here
         self.hvp_calls += 1
         tic = time.perf_counter()
 
@@ -94,9 +80,11 @@ class SARC(Optimizer):
                                     grad_outputs=v_list, only_inputs=True,
                                     retain_graph=True)
 
+        hvp_vec = list2vec(hvp)
+
         self.hvp_time += time.perf_counter()-tic
 
-        return list2vec(hvp)
+        return hvp_vec
 
 
     '''Evaluate cubic sub-problem and its gradient'''
@@ -110,7 +98,7 @@ class SARC(Optimizer):
         return func, grad
 
 
-    '''Same as above but using Numpy functionality'''
+    '''Same as above but using Numpy'''
     def _cubic_np(self, s, g, H, sigma):
         func = g.T@s + 0.5*s.T@H@s + (sigma/3)*(np.linalg.norm(s)**3)
         grad = g + H@s + sigma*np.linalg.norm(s)*s
@@ -119,9 +107,10 @@ class SARC(Optimizer):
 
 
     '''Solve the cubic sub-problem using generalized Lanczos'''
-    #NOTE: There are a few places in here where I am not sure if I should be
-    #worried about GPU stuff e.g. tensor creation.
-    def _subProbSolve_lanczos(self, grads, gradsH):
+    def _lanczos(self, grads, gradsH):
+        #Set device
+        device = grads[0].device
+
         #Setup some parameters
         sigma = self.param_groups[0]['sigma']
         maxitr = self.param_groups[0]['sub_prob_max_iters']
@@ -132,11 +121,11 @@ class SARC(Optimizer):
 
         d = torch.numel(g)
         K = min(d, maxitr)
-        Q = torch.zeros((d, K))
+        Q = torch.zeros((d, K), device=device)
 
         q = g/torch.norm(g)
 
-        T = torch.zeros((K, K))
+        T = torch.zeros((K, K), device=device)
 
         g_norm = torch.norm(g, 2)
         tol = min(tol, tol*g_norm)
@@ -154,7 +143,7 @@ class SARC(Optimizer):
             T[i+1,i] = b
 
             if b < tol:
-                q = torch.zeros_like(q)
+                q = torch.zeros_like(q, device=device)
                 break
 
             q = r/b
@@ -166,30 +155,19 @@ class SARC(Optimizer):
         Q = Q[:, :i+2]
 
         if torch.norm(T) < tol and g_norm < 1e-16:
-            return torch.zeros(d), 0
+            return torch.zeros(d, device=device), 0
 
         gt = torch.matmul(torch.transpose(Q, 0, 1), g)
 
-        #Optimization
-        z0 = np.zeros(i+2)
-
-        self.scipy_calls += 1
-        tic = time.perf_counter()
-
-        out = minimize(self._cubic_np, z0, args=(gt.numpy(), T.numpy(), sigma),
-                        method='L-BFGS-B', tol=tol, jac=True)
-
-        self.scipy_time += time.perf_counter() - tic
-
-        z = out['x']
-        m = out['fun']
-
-        return torch.matmul(Q, torch.from_numpy(z).float()), m
+        return (gt, T, Q)
 
 
-    def _subProbSolve_eigsh(self, grads, gradsH):
+    def _eig(self, grads, gradsH):
+        #Set device
+        device = grads[0].device
+
         #Setup some parameters
-        sigma = self.param_groups[0]['sigma']
+        # sigma = self.param_groups[0]['sigma']
         maxitr = self.param_groups[0]['sub_prob_max_iters']
         tol = self.param_groups[0]['sub_prob_tol']
 
@@ -208,8 +186,8 @@ class SARC(Optimizer):
         _, evec = eigsh(hvp_lin_op, k=1, which='SA', maxiter=maxitr, tol=tol)
         e = torch.from_numpy(evec.ravel())
 
-        Q = torch.zeros((d, 2))
-        T = torch.zeros((2, 2))
+        Q = torch.zeros((d, 2), device=device)
+        T = torch.zeros((2, 2), device=device)
 
         g_norm = torch.norm(g, 2)
         tol = min(tol, tol*g_norm)
@@ -227,30 +205,34 @@ class SARC(Optimizer):
         T[1,1] = b
 
         if b < tol:
-            q = torch.zeros_like(q)
+            q = torch.zeros_like(q, device=device)
         else:
             q = r/b
         Q[:,1] = q
 
         if torch.norm(T) < tol and g_norm < 1e-16:
-            return torch.zeros(d), 0
+            return torch.zeros(d, device=device), 0
 
         gt = torch.matmul(torch.transpose(Q, 0, 1), g)
 
-        #Optimization
-        z0 = np.zeros(2)
+        return (gt, T, Q)
 
-        self.scipy_calls += 1
+
+    def _subProbSolve(gt, T, Q, sigma):
+        self.minimize_calls += 1
         tic = time.perf_counter()
 
+        z0 = np.zeros(2)
         out = minimize(self._cubic_np, z0, args=(gt.numpy(), T.numpy(), sigma),
                         method='L-BFGS-B', tol=tol, jac=True)
 
-        self.scipy_time += time.perf_counter() - tic
-
         z = out['x']
         m = out['fun']
-        return torch.matmul(Q, torch.from_numpy(z).float()), m
+        s = torch.matmul(Q, torch.from_numpy(z).float())
+
+        self.minimize_time += time.perf_counter() - tic
+
+        return s, m
 
 
     '''Update model parameters inplace'''
@@ -273,7 +255,10 @@ class SARC(Optimizer):
     loss_fn -> Recomputes loss without retaining gradient information
     closure -> Clears gradients and re-evaluates model
     '''
+    @torch.no_grad()
     def step(self, grads, gradsH, loss, loss_fn, closure=None):
+        self.props.append(5) #One for calling loss function below, 4 for grads and gradsH
+
         sigma = self.param_groups[0]['sigma']
         eta_1 = self.param_groups[0]['eta_1']
         eta_2 = self.param_groups[0]['eta_2']
@@ -283,16 +268,18 @@ class SARC(Optimizer):
 
         fails = 0
 
+        self.sub_calls += 1
+        tic = time.perf_counter()
+        out = self._subProbSetup(grads, gradsH)
+        self.sub_time += time.perf_counter() - tic
+
         while fails < sub_prob_fails:
-            self.sub_calls += 1
-            tic = time.perf_counter()
-            s, m = self.subProbSolve(grads, gradsH)
-            self.sub_time += time.perf_counter() - tic
+            s, m = self._subProbSolve(*out, sigma)
 
             #Need to figure out how its gonna work with updating parameters
             self._update(s)
             p = (loss - loss_fn())/(-m)
-            self.p.append(p)
+            self.rho.append(p.item())
 
             #bad update
             if p<eta_1:
@@ -313,10 +300,13 @@ class SARC(Optimizer):
         self.param_groups[0]['sigma'] = sigma
 
     '''
-    Print performance details
+    Get performance details
     '''
     def getInfo(self):
-        return (self.hvp_time/self.hvp_calls,
-                self.scipy_time/self.scipy_calls,
-                self.sub_time/self.sub_calls,
-                self.p)
+        return {
+                'avg_hvp_time': self.hvp_time/self.hvp_calls,
+                'avg_minimize_time': self.minimize_time/self.minimize_calls,
+                'avg_sub_time': self.sub_time/self.sub_calls,
+                'rho_list': self.rho,
+                'props_list': self.props
+        }

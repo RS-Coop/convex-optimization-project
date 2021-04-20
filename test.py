@@ -1,51 +1,34 @@
 import argparse
-
-from core.arc.arc import arc
-from core.arc import hessian
-from problems.svd import svd
-
-from torch.optim import SGD
-from core.sarc_torch.sarc_torch import SARC
-from problems.spambase_torch import spambase
-from problems.mnist_torch import mnist
-from problems.cifar_torch import cifar
+from core.problems import imageClassification as imc
 
 if __name__=='__main__':
-    parser = argparse.ArgumentParser(description='Run ARC and SARC tests')
-    parser.add_argument('--test', type=str, default='spambase')
-    parser.add_argument('--order', type=int, default=1)
+    parser = argparse.ArgumentParser(description='Run SARC tests')
+    parser.add_argument('--dataset', type=str, default='mnist')
+    parser.add_argument('--optim_method', type=str, default='sgd')
     parser.add_argument('--epochs', type=int, default=1)
     parser.add_argument('--batch_size', type=int, default=64)
-    parser.add_argument('--sub_method', type=str, default='lanczos')
+    parser.add_argument('--sub_method', type=str, default='eigsh')
     parser.add_argument('--sub_tol', type=float, default=1e-2)
     parser.add_argument('--sub_max_iters', type=int, default=10)
 
     args = parser.parse_args()
 
-    if args.order == 2:
-        method = SARC
+    if args.optim_method == 'sgd':
         kw = {
-            'sub_prob_method':args.sub_method,
-            'sub_prob_tol':args.sub_tol,
-            'sub_prob_max_iters':args.sub_max_iters
+            'lr': 0.01,
+            'momentum': 0.9
         }
-    elif args.order == 1:
-        method = SGD
 
-    if args.test == 'svd':
-        minimum = svd(arc, {'eps_g':1e-3, 'eps_h':1e-3})
-        print(f'Minimum objective value: {minimum}')
+    elif args.optim_method == 'sarc':
+        kw = {
+            'sub_prob_method': args.sub_method,
+            'sub_prob_tol': args.sub_tol,
+            'sub_prob_max_iters': args.sub_max_iters
+        }
 
-    elif args.test == 'spambase':
-        spambase(dataroot='problems/spambase', optim_method=method,
-                    epochs=args.epochs, order=args.order, batch_size=args.batch_size, **kw)
+    else: raise ValueError('Optimization method not supported.')
 
-    elif args.test == 'mnist':
-        mnist(data_dir='problems/mnist', optim_method=method,
-                epochs=args.epochs, order=args.order, batch_size=args.batch_size, **kw)
+    output = imc(dataset=args.dataset, optim_method=args.optim_method, epochs=args.epochs,
+                    batch_size=args.batch_size, validate=False, **kw)
 
-    elif args.test == 'cifar':
-        cifar(data_dir='problems/cifar10', optim_method=method,
-                epochs=args.epochs, order=args.order, batch_size=args.batch_size, **kw)
-
-    else: print('Specified test not supported.')
+    print(f'Test Accuracy for {args.dataset.upper()}: {output["test_acc"]*100:0.2f}')

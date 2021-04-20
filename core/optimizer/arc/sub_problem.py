@@ -1,7 +1,4 @@
 '''
-Autho: Cooper Simpson
-Date: March 12, 2021
-
 ARC sub-problem solvers.
 
 Here we implement methods for solving the regularized cubic minimization

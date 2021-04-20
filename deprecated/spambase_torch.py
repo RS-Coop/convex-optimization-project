@@ -9,78 +9,18 @@ import torch
 from torch.utils.data import Dataset, DataLoader
 
 '''
-Dataset class for spambase dataset
-'''
-class SpamBase(Dataset):
-    def __init__(self, dataroot, split, device, data_map=None):
-        assert split in ['train', 'test']
-
-        self.data = pd.read_csv(f'{dataroot}/spambase_{split}.data', header=None)
-
-        if data_map is None:
-            self.data_map = lambda x: np.log(x+0.1)
-        else:
-            self.data_map = data_map
-
-        self.device = device
-
-    def __len__(self):
-        return self.data.shape[0]
-
-    def __getitem__(self, idx):
-        X = torch.tensor(self.data.iloc[idx, 0:-1].apply(self.data_map),
-                            dtype=torch.float, device=self.device)
-        y = torch.tensor(self.data.iloc[idx, -1], dtype=torch.float,
-                            device=self.device).reshape(-1)
-
-        return {'features':X, 'labels':y}
-
-'''
-Simple 1 layer dense network for logistic regression
-'''
-class ZeroHidden(torch.nn.Module):
-    def __init__(self, input_dim):
-        super().__init__()
-
-        self.linear = torch.nn.Linear(input_dim, 1, bias=False)
-
-    def forward(self, x):
-        return self.linear(x)
-
-    def predict(self, x):
-        outputs = self.forward(x)
-        return torch.round(torch.sigmoid(outputs))
-
-'''
-Simple 2 layer dense network for logistic regression
-'''
-class OneHidden(torch.nn.Module):
-    def __init__(self, input_dim):
-        super().__init__()
-
-        self.fc1 = torch.nn.Linear(input_dim, 10, bias=False)
-        self.fc2 = torch.nn.Linear(10, 1, bias=False)
-
-    def forward(self, x):
-        return self.fc2(self.fc1(x))
-
-    def predict(self, x):
-        outputs = self.forward(x)
-        return torch.round(torch.sigmoid(outputs))
-
-'''
 Build model, train, and validate -- potentially using second order optimizer.
 '''
 def spambase(dataroot, model_type='zero', optim_method=None, order=1, batch_size=64,
                 epochs=1, learn_rate=0.01, **kw):
 
     #Check for GPU
-    if torch.cuda.is_available():
-        device = 'cuda:0'
-        print('Using GPU acceleration.')
-    else:
-        device = 'cpu'
-        print('Using CPU only.')
+    # if torch.cuda.is_available():
+    #     device = 'cuda:0'
+    #     print('Using GPU acceleration.')
+    # else:
+    #     device = 'cpu'
+    #     print('Using CPU only.')
 
     #Only gonna use cpu for now
     device = torch.device('cpu')

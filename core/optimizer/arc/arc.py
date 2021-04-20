@@ -1,7 +1,4 @@
 '''
-Author: Cooper Simpson
-Date: March 7, 2021
-
 Adaptive Regularization with Cubics (ARC) implementation.
 
 This implementation is meant to be general, but we expect the possibility
