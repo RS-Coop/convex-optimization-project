@@ -15,7 +15,7 @@ Helper functions
 '''
 '''Convert a list of tensors to a single 1D tensor'''
 def list2vec(l):
-    vec = [li.view(-1).data for li in l]
+    vec = [li.reshape(-1).data for li in l]
 
     return torch.cat(vec, 0)
 
@@ -25,7 +25,7 @@ def vec2list(v, template):
     l = []
     start = 0
     for ti in template:
-        l.append(v[start:start+torch.numel(ti)].view(ti.shape))
+        l.append(v[start:start+torch.numel(ti)].reshape(ti.shape))
         start += torch.numel(ti)
 
     return l
@@ -39,7 +39,7 @@ class SARC(Optimizer):
     kw -> Optimizer keywords
     '''
     def __init__(self, params, sigma=1, eta_1=0.1, eta_2=0.9, gamma_1=2,
-                    gamma_2=2, sub_prob_fails=1, sub_prob_max_iters=50,
+                    gamma_2=2, sub_prob_fails=10, sub_prob_max_iters=50,
                     sub_prob_tol=1e-2, sub_prob_method='eigsh'):
 
         defaults = dict(sigma=sigma, eta_1=eta_1, eta_2=eta_2, gamma_1=gamma_1,
@@ -159,7 +159,7 @@ class SARC(Optimizer):
 
         gt = torch.matmul(torch.transpose(Q, 0, 1), g)
 
-        return (gt, T, Q)
+        return (gt, T, Q, tol)
 
 
     def _eig(self, grads, gradsH):
@@ -215,14 +215,14 @@ class SARC(Optimizer):
 
         gt = torch.matmul(torch.transpose(Q, 0, 1), g)
 
-        return (gt, T, Q)
+        return (gt, T, Q, tol)
 
 
-    def _subProbSolve(gt, T, Q, sigma):
+    def _subProbSolve(self, gt, T, Q, tol, sigma):
         self.minimize_calls += 1
         tic = time.perf_counter()
 
-        z0 = np.zeros(2)
+        z0 = np.zeros(T.shape[0])
         out = minimize(self._cubic_np, z0, args=(gt.numpy(), T.numpy(), sigma),
                         method='L-BFGS-B', tol=tol, jac=True)
 
