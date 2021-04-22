@@ -26,12 +26,12 @@ if __name__=='__main__':
                             batch_size=batch_size, return_model=True, validate=True, **kw)
 
     path = os.path.dirname(__file__)
-    data_dir = os.path.join(path, f'data/eigsh_{str(args.tol).replace('.','')}.json')
+    data_dir = os.path.join(path, f'data/eigsh_{str(args.tol).replace(".","")}.json')
 
     with open(data_dir, 'w') as file:
         json.dump(output, file)
 
-    data_dir = os.path.join(path, f'./data/eigsh_{str(args.tol).replace('.','')}.pt')
+    data_dir = os.path.join(path, f'./models/eigsh_{str(args.tol).replace(".","")}.pt')
 
     torch.save(model.state_dict(), data_dir)
 

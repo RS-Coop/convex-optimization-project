@@ -22,8 +22,8 @@ if __name__=='__main__':
         'momentum': args.momentum
     }
 
-    output, model = imc(dataset=dataset, optim_method='sgd', epochs=epochs,
-                            batch_size=batch_size, return_model=True, validate=True, **kw)
+    output = imc(dataset=dataset, optim_method='sgd', epochs=epochs,
+                        batch_size=batch_size, return_model=False, validate=True, **kw)
 
     path = os.path.dirname(__file__)
     data_dir = os.path.join(path, f'data/sgd_{str(args.lr).replace(".","")}_{str(args.momentum).replace(".","")}.json')
@@ -31,8 +31,8 @@ if __name__=='__main__':
     with open(data_dir, 'w') as file:
         json.dump(output, file)
 
-    data_dir = os.path.join(path, f'data/sgd_{str(args.lr).replace(".","")}_{str(args.momentum).replace(".","")}.pt')
+    # data_dir = os.path.join(path, f'data/sgd_{str(args.lr).replace(".","")}_{str(args.momentum).replace(".","")}.pt')
 
-    torch.save(model.state_dict(), data_dir)
+    # torch.save(model.state_dict(), data_dir)
 
     print('Test finished.')

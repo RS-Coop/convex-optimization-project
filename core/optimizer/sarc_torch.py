@@ -39,7 +39,7 @@ class SARC(Optimizer):
     kw -> Optimizer keywords
     '''
     def __init__(self, params, sigma=1, eta_1=0.1, eta_2=0.9, gamma_1=2,
-                    gamma_2=2, sub_prob_fails=10, sub_prob_max_iters=50,
+                    gamma_2=2, sub_prob_fails=1, sub_prob_max_iters=50,
                     sub_prob_tol=1e-2, sub_prob_method='eigsh'):
 
         defaults = dict(sigma=sigma, eta_1=eta_1, eta_2=eta_2, gamma_1=gamma_1,
@@ -108,6 +108,9 @@ class SARC(Optimizer):
 
     '''Solve the cubic sub-problem using generalized Lanczos'''
     def _lanczos(self, grads, gradsH):
+        self.sub_calls += 1
+        tic = time.perf_counter()
+
         #Set device
         device = grads[0].device
 
@@ -159,15 +162,20 @@ class SARC(Optimizer):
 
         gt = torch.matmul(torch.transpose(Q, 0, 1), g)
 
+        self.sub_time += time.perf_counter() - tic
+
         return (gt, T, Q, tol)
 
-
+    '''Solve the cubic sub-problem using eigsh to get the eigen-point'''
     def _eig(self, grads, gradsH):
+        self.sub_calls += 1
+        tic = time.perf_counter()
+
         #Set device
         device = grads[0].device
 
         #Setup some parameters
-        # sigma = self.param_groups[0]['sigma']
+        sigma = self.param_groups[0]['sigma']
         maxitr = self.param_groups[0]['sub_prob_max_iters']
         tol = self.param_groups[0]['sub_prob_tol']
 
@@ -214,6 +222,8 @@ class SARC(Optimizer):
             return torch.zeros(d, device=device), 0
 
         gt = torch.matmul(torch.transpose(Q, 0, 1), g)
+
+        self.sub_time += time.perf_counter() - tic
 
         return (gt, T, Q, tol)
 
@@ -268,10 +278,7 @@ class SARC(Optimizer):
 
         fails = 0
 
-        self.sub_calls += 1
-        tic = time.perf_counter()
         out = self._subProbSetup(grads, gradsH)
-        self.sub_time += time.perf_counter() - tic
 
         while fails < sub_prob_fails:
             s, m = self._subProbSolve(*out, sigma)
