@@ -258,10 +258,11 @@ class SARC(Optimizer):
         start = 0
 
         for p in self.param_groups[0]['params']:
-            n = torch.numel(p)
-            p.data.add_(s[start:start+n].view(p.shape))
+            if p.requires_grad == True:
+                n = torch.numel(p)
+                p.data.add_(s[start:start+n].view(p.shape))
 
-            start += n
+                start += n
 
 
     '''
