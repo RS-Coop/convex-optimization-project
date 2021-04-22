@@ -5,7 +5,7 @@ import argparse
 import os
 
 if __name__=='__main__':
-    parser = argparse.ArgumentParser(description='CIFAR10 eigsh test')
+    parser = argparse.ArgumentParser(description='CIFAR10 sgd test')
     parser.add_argument('--lr', type=float, default=1e-2)
     parser.add_argument('--momentum', type=float, default=0.9)
     args = parser.parse_args()
@@ -14,7 +14,7 @@ if __name__=='__main__':
 
     #Setup hyper-parameters
     dataset = 'cifar10'
-    epochs = 60
+    epochs = 25
     batch_size = 100
 
     kw = {
@@ -23,7 +23,7 @@ if __name__=='__main__':
     }
 
     output = imc(dataset=dataset, optim_method='sgd', epochs=epochs,
-                        batch_size=batch_size, return_model=False, validate=True, **kw)
+                        batch_size=batch_size, return_model=False, validate=1, **kw)
 
     path = os.path.dirname(__file__)
     data_dir = os.path.join(path, f'data/sgd_{str(args.lr).replace(".","")}_{str(args.momentum).replace(".","")}.json')

@@ -40,7 +40,7 @@ class SARC(Optimizer):
     '''
     def __init__(self, params, sigma=1, eta_1=0.1, eta_2=0.9, gamma_1=2,
                     gamma_2=2, sub_prob_fails=1, sub_prob_max_iters=50,
-                    sub_prob_tol=1e-2, sub_prob_method='eigsh'):
+                    sub_prob_tol=1e-2, sub_prob_method='explicit'):
 
         defaults = dict(sigma=sigma, eta_1=eta_1, eta_2=eta_2, gamma_1=gamma_1,
                         gamma_2=gamma_2, sub_prob_fails=sub_prob_fails,
@@ -53,10 +53,10 @@ class SARC(Optimizer):
         self.rho = []
         self.props = []
 
-        if sub_prob_method == 'lanczos':
-            self._subProbSetup = self._lanczos
-        elif sub_prob_method == 'eigsh':
-            self._subProbSetup = self._eig
+        if sub_prob_method == 'implicit':
+            self._subProbSetup = self._implicitEig
+        elif sub_prob_method == 'explicit':
+            self._subProbSetup = self._explicitEig
         else:
             raise ValueError('Sub-problem solution method not supported.')
 
@@ -107,7 +107,7 @@ class SARC(Optimizer):
 
 
     '''Solve the cubic sub-problem using generalized Lanczos'''
-    def _lanczos(self, grads, gradsH):
+    def _implicitEig(self, grads, gradsH):
         self.sub_calls += 1
         tic = time.perf_counter()
 
@@ -157,6 +157,7 @@ class SARC(Optimizer):
         T = T[:i+2, :i+2]
         Q = Q[:, :i+2]
 
+        '''Now that we have split up the setup and solve this logic needs to change'''
         if torch.norm(T) < tol and g_norm < 1e-16:
             return torch.zeros(d, device=device), 0
 
@@ -167,7 +168,7 @@ class SARC(Optimizer):
         return (gt, T, Q, tol)
 
     '''Solve the cubic sub-problem using eigsh to get the eigen-point'''
-    def _eig(self, grads, gradsH):
+    def _explicitEig(self, grads, gradsH):
         self.sub_calls += 1
         tic = time.perf_counter()
 
@@ -191,7 +192,13 @@ class SARC(Optimizer):
         hvp_lin_op = LinearOperator((d,d), matvec=hvp)
 
         #Calculate eigenvectors
-        _, evec = eigsh(hvp_lin_op, k=1, which='SA', maxiter=maxitr, tol=tol)
+        '''This can break sometimes and im not sure why.
+        Need to make it a bit more robust'''
+        try:
+            _, evec = eigsh(hvp_lin_op, k=1, which='SA', maxiter=maxitr, tol=tol)
+        except exception as e:
+            evec = e.eigenvectors
+
         e = torch.from_numpy(evec.ravel())
 
         Q = torch.zeros((d, 2), device=device)
@@ -218,6 +225,7 @@ class SARC(Optimizer):
             q = r/b
         Q[:,1] = q
 
+        '''Now that we have split up the setup and solve this logic needs to change'''
         if torch.norm(T) < tol and g_norm < 1e-16:
             return torch.zeros(d, device=device), 0
 
@@ -267,7 +275,7 @@ class SARC(Optimizer):
     '''
     @torch.no_grad()
     def step(self, grads, gradsH, loss, loss_fn, closure=None):
-        self.props.append(5) #One for calling loss function below, 4 for grads and gradsH
+        self.props.append(4) #4 for grads and gradsH
 
         sigma = self.param_groups[0]['sigma']
         eta_1 = self.param_groups[0]['eta_1']
@@ -281,6 +289,7 @@ class SARC(Optimizer):
         out = self._subProbSetup(grads, gradsH)
 
         while fails < sub_prob_fails:
+            self.props[-1] += 1 #For calling loss_fn below
             s, m = self._subProbSolve(*out, sigma)
 
             #Need to figure out how its gonna work with updating parameters

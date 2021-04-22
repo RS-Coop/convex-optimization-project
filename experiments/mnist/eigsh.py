@@ -13,11 +13,11 @@ if __name__=='__main__':
     kw = {
         'sub_prob_tol': 1e-2,
         'sub_prob_max_iters': 50,
-        'sub_prob_method': 'eigsh'
+        'sub_prob_method': 'explicit'
     }
 
     output = imc(dataset=dataset, optim_method='sarc', epochs=epochs,
-                    batch_size=batch_size, return_model=False, validate=True, **kw)
+                    batch_size=batch_size, return_model=False, validate=0.1, **kw)
 
     path = os.path.dirname(__file__)
     data_dir = os.path.join(path, 'data/eigsh.json')

@@ -28,8 +28,8 @@ def evaluate(model, loader):
 '''
 Build model, train, and validate -- potentially using second order optimizer
 '''
-def imageClassification(dataset, optim_method, epochs=1, batch_size=64,
-                            sample_rate=0.03, return_model=False, validate=False, **kw):
+def imageClassification(dataset, optim_method, state=None, epochs=1, batch_size=64,
+                            sample_rate=0.03, return_model=False, validate=None, **kw):
     #Setup dataloaders
     if dataset == 'mnist':
         model_type = Dense3
@@ -60,14 +60,19 @@ def imageClassification(dataset, optim_method, epochs=1, batch_size=64,
 
     #Validation data
     #Take 10% of test data
-    if validate:
-        length = int(0.1*len(testset))
+    if validate is not None:
+        assert validate <= 1 and validate >= 0
+        length = int(validate*len(testset))
         valset, _ = random_split(testset, [length, len(testset)-length])
         valloader = DataLoader(valset, batch_size=batch_size, shuffle=True,
                                     num_workers=4, pin_memory=True)
 
     #Build model
     model = model_type()
+
+    if state != None:
+        print('Loading model state dict')
+        model.load_state_dict(state)
 
     device = torch.device('cpu')
     model.to(device)
