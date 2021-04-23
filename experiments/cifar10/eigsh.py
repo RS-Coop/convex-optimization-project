@@ -17,7 +17,7 @@ if __name__=='__main__':
     batch_size = 100
 
     kw = {
-        'sub_prob_tol': args.tol,
+        'eigen_tol': args.tol,
         'sub_prob_max_iters': 50,
         'sub_prob_method': 'explicit'
     }

@@ -10,7 +10,7 @@ if __name__=='__main__':
     epochs = 10
     batch_size = 100
 
-    kw = {'sub_prob_method': 'implicit', 'sub_prob_tol': 1e-6}
+    kw = {'sub_prob_method': 'implicit'}
 
     path = os.path.dirname(__file__)
 

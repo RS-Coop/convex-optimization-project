@@ -40,12 +40,12 @@ class SARC(Optimizer):
     '''
     def __init__(self, params, sigma=1, eta_1=0.1, eta_2=0.9, gamma_1=2,
                     gamma_2=2, sub_prob_fails=1, sub_prob_max_iters=50,
-                    sub_prob_tol=1e-2, sub_prob_method='explicit'):
+                    sub_prob_tol=1e-12, eigen_tol=1e-3, sub_prob_method='explicit'):
 
         defaults = dict(sigma=sigma, eta_1=eta_1, eta_2=eta_2, gamma_1=gamma_1,
                         gamma_2=gamma_2, sub_prob_fails=sub_prob_fails,
                         sub_prob_max_iters=sub_prob_max_iters, sub_prob_tol=sub_prob_tol,
-                        sub_prob_method=sub_prob_method)
+                        sub_prob_method=sub_prob_method, eigen_tol=eigen_tol)
 
         self.hvp_time, self.hvp_calls = 0.0, 0
         self.sub_time, self.sub_calls = 0.0, 0
@@ -179,6 +179,7 @@ class SARC(Optimizer):
         sigma = self.param_groups[0]['sigma']
         maxitr = self.param_groups[0]['sub_prob_max_iters']
         tol = self.param_groups[0]['sub_prob_tol']
+        eigen_tol = self.param_groups[0]['eigen_tol']
 
         #Convert the gradients to a vector
         g = list2vec(grads)
@@ -195,7 +196,7 @@ class SARC(Optimizer):
         '''This can break sometimes and im not sure why.
         Need to make it a bit more robust'''
         try:
-            _, evec = eigsh(hvp_lin_op, k=1, which='SA', maxiter=maxitr, tol=tol)
+            _, evec = eigsh(hvp_lin_op, k=1, which='SA', maxiter=maxitr, tol=eigen_tol)
         except exception as e:
             evec = e.eigenvectors
 
