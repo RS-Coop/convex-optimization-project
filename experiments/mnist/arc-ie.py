@@ -18,7 +18,7 @@ if __name__=='__main__':
         kw['sub_prob_max_iters'] = max_iters
 
         output = imc(dataset=dataset, optim_method='sarc', epochs=epochs,
-                        batch_size=batch_size, return_model=False, validate=0.1, **kw)
+                        batch_size=batch_size, return_model=False, validate=1, **kw)
 
         data_dir = os.path.join(path, f'data/implicit_{max_iters}.json')
 

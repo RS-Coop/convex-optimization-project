@@ -17,10 +17,10 @@ if __name__=='__main__':
     }
 
     output = imc(dataset=dataset, optim_method='sarc', epochs=epochs,
-                    batch_size=batch_size, return_model=False, validate=0.1, **kw)
+                    batch_size=batch_size, return_model=False, validate=1, **kw)
 
     path = os.path.dirname(__file__)
-    data_dir = os.path.join(path, 'data/eigsh.json')
+    data_dir = os.path.join(path, 'data/explicit.json')
 
     with open(data_dir, 'w') as file:
         json.dump(output, file)

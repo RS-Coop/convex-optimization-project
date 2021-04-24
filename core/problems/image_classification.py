@@ -29,7 +29,7 @@ def evaluate(model, loader):
 Build model, train, and validate -- potentially using second order optimizer
 '''
 def imageClassification(dataset, optim_method, state=None, epochs=1, batch_size=64,
-                            sample_rate=0.03, return_model=False, validate=None, **kw):
+                            sample_rate=0.05, return_model=False, validate=None, **kw):
     #Setup dataloaders
     if dataset == 'mnist':
         model_type = Dense3
@@ -117,6 +117,11 @@ def imageClassification(dataset, optim_method, state=None, epochs=1, batch_size=
             if order == 2:
                 outputs = model(data)
                 loss_val = loss(outputs, labels)
+
+                '''I could do this portion slightly better by doing the gradsH
+                first and then doing grads on only the data not included in gradH
+                but then adding the gradsH value to grads, i.e. only ever do a
+                forward pass on a piece of data once.'''
 
                 #First get full gradient
                 grads = torch.autograd.grad(loss_val, model.parameters())

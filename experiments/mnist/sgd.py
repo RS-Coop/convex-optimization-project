@@ -13,7 +13,7 @@ if __name__=='__main__':
     kw = {'lr': 0.01, 'momentum': 0.9}
 
     output = imc(dataset=dataset, optim_method='sgd', epochs=epochs,
-                    batch_size=batch_size, return_model=False, validate=0.1, **kw)
+                    batch_size=batch_size, return_model=False, validate=1, **kw)
 
     path = os.path.dirname(__file__)
     data_dir = os.path.join(path, 'data/sgd.json')

@@ -40,7 +40,7 @@ class SARC(Optimizer):
     '''
     def __init__(self, params, sigma=1, eta_1=0.1, eta_2=0.9, gamma_1=2,
                     gamma_2=2, sub_prob_fails=1, sub_prob_max_iters=50,
-                    sub_prob_tol=1e-12, eigen_tol=1e-3, sub_prob_method='explicit'):
+                    sub_prob_tol=1e-6, eigen_tol=1e-3, sub_prob_method='explicit'):
 
         defaults = dict(sigma=sigma, eta_1=eta_1, eta_2=eta_2, gamma_1=gamma_1,
                         gamma_2=gamma_2, sub_prob_fails=sub_prob_fails,

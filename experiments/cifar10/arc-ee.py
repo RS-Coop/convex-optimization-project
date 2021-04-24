@@ -7,6 +7,7 @@ import os
 if __name__=='__main__':
     parser = argparse.ArgumentParser(description='CIFAR10 explicit sub-problem test')
     parser.add_argument('--tol', type=float, default=1e-2)
+    parser.add_argument('--save_model', type=bool, default=False)
     args = parser.parse_args()
 
     print('Beginning test...')
@@ -33,8 +34,9 @@ if __name__=='__main__':
     with open(data_dir, 'w') as file:
         json.dump(output, file)
 
-    data_dir = os.path.join(path, f'models/{file_name}.pt')
+    if args.save_model:
+        data_dir = os.path.join(path, f'models/{file_name}.pt')
 
-    torch.save(model.state_dict(), data_dir)
+        torch.save(model.state_dict(), data_dir)
 
     print('Test finished.')
