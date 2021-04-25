@@ -50,14 +50,14 @@ if __name__=='__main__':
 
     style = '-'
     for result in imp:
-        props = np.cumsum(np.array(exp['props_list']))
+        props = np.cumsum(np.array(result['props_list']))
         loss_ax.semilogx(props[::loss_step], result['train_loss'][::loss_step], ls=style)
         acc_ax.semilogx(props[599::600], result['validation_acc'], ls=style)
 
     style = '-.'
     props = 2*np.array(range(6001))
     loss_ax.semilogx(props[1::loss_step], sgd['train_loss'][::loss_step], ls=style)
-    acc_ax.semilogx(props[599::600], sgd['validation_acc'][1:], ls=style)
+    acc_ax.semilogx(props[599::600], sgd['validation_acc'], ls=style)
 
     loss_ax.legend(legend)
     loss_ax.set_xlabel('Propagations (log scale)')
