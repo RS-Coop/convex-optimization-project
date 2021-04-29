@@ -61,7 +61,6 @@ def imageClassification(dataset, optim_method, state=None, epochs=1, batch_size=
                                 num_workers=4, pin_memory=True)
 
     #Validation data
-    #Take 10% of test data
     if validate is not None:
         assert validate <= 1 and validate >= 0
         length = int(validate*len(testset))
