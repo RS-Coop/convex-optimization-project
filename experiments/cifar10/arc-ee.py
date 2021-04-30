@@ -27,7 +27,8 @@ if __name__=='__main__':
     file_name = f'explicit_{str(args.tol).replace(".","")}'
 
     output, model = imc(dataset=dataset, optim_method='sarc', epochs=epochs,
-                            batch_size=batch_size, return_model=True, validate=1, **kw)
+                            batch_size=batch_size, return_model=True, validate=1,
+                            sample_rate=0.03, **kw)
 
     data_dir = os.path.join(path, f'data/{file_name}.json')
 

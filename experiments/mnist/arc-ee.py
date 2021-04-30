@@ -17,7 +17,8 @@ if __name__=='__main__':
     }
 
     output = imc(dataset=dataset, optim_method='sarc', epochs=epochs,
-                    batch_size=batch_size, return_model=False, validate=1, **kw)
+                    batch_size=batch_size, return_model=False, validate=1,
+                    sample_rate=0.03, **kw)
 
     path = os.path.dirname(__file__)
     data_dir = os.path.join(path, 'data/explicit.json')
